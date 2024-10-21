@@ -80,16 +80,64 @@
             object-fit: cover;
             margin-right: 1rem;
         }
-        #publications ul, #background ul {
-            list-style-type: none;
-            padding: 0;
-        }
-        #publications li, #background li {
-            margin-bottom: 1em;
-        }
         .citation {
             font-size: 0.8em;
             vertical-align: super;
+        }
+        .publication-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .publication-item {
+            margin-bottom: 1.5em;
+            padding: 1em;
+            border-left: 4px solid #4285F4;
+            background-color: #f9f9f9;
+            transition: all 0.3s ease;
+        }
+        .publication-item:hover {
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .publication-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 0.5em;
+        }
+        .publication-authors {
+            font-style: italic;
+            color: #666;
+        }
+        .publication-venue {
+            color: #4285F4;
+        }
+        .publication-link {
+            display: inline-block;
+            margin-top: 0.5em;
+            padding: 0.3em 0.6em;
+            background-color: #4285F4;
+            color: white;
+            text-decoration: none;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+        .publication-link:hover {
+            background-color: #3367D6;
+        }
+        .publication-filters {
+            margin-bottom: 1em;
+        }
+        .filter-button {
+            margin-right: 0.5em;
+            padding: 0.5em 1em;
+            background-color: #f0f0f0;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .filter-button:hover, .filter-button.active {
+            background-color: #4285F4;
+            color: white;
         }
     </style>
 </head>
@@ -222,14 +270,24 @@
             }
         }
 
-        // Function to display publications
-        function displayPublications(entries) {
+     function displayPublications(entries, filter = 'all') {
             console.log('Displaying publications...');
             const publicationList = document.getElementById('publication-list');
-            if (entries && entries.length > 0) {
-                entries.forEach((entry, index) => {
+            publicationList.innerHTML = ''; // Clear existing entries
+            
+            const currentYear = new Date().getFullYear();
+            const filteredEntries = entries.filter(entry => {
+                if (filter === 'recent') {
+                    return currentYear - parseInt(entry.fields.year) <= 3; // Show last 3 years
+                }
+                return true; // 'all' filter
+            });
+
+            if (filteredEntries.length > 0) {
+                filteredEntries.forEach((entry, index) => {
                     console.log(`Processing entry ${index}:`, entry);
                     const li = document.createElement('li');
+                    li.className = 'publication-item';
                     li.innerHTML = formatPublication(entry);
                     publicationList.appendChild(li);
                 });
@@ -250,14 +308,61 @@
             const authors = entry.fields.author ? entry.fields.author.split(' and ').join(', ') : 'Unknown Author';
             const title = entry.fields.title ? entry.fields.title.replace(/[{}]/g, '') : 'Untitled';
             const year = entry.fields.year || 'Unknown Year';
-            const journal = entry.fields.journal || entry.fields.booktitle || 'Unknown Publication';
+            const venue = entry.fields.journal || entry.fields.booktitle || 'Unknown Publication';
+            const url = entry.fields.url || '';
             
-            return `${authors} (${year}). "${title}". <em>${journal}</em>.`;
+            let html = `<div class="publication-title">${title}</div>`;
+            html += `<div class="publication-authors">${authors}</div>`;
+            html += `<div class="publication-venue">${venue}, ${year}</div>`;
+            if (url) {
+                html += `<a href="${url}" target="_blank" class="publication-link">View Paper</a>`;
+            }
+            return html;
+        }
+
+        // Function to set up publication filters
+        function setupPublicationFilters() {
+            const filtersHTML = `
+                <div class="publication-filters">
+                    <button class="filter-button active" data-filter="all">All Publications</button>
+                    <button class="filter-button" data-filter="recent">Recent Publications</button>
+                </div>
+            `;
+            document.getElementById('publications').insertAdjacentHTML('afterbegin', filtersHTML);
+
+            // Add event listeners to filter buttons
+            document.querySelectorAll('.filter-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    document.querySelectorAll('.filter-button').forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    const filter = this.getAttribute('data-filter');
+                    loadPublications(filter);
+                });
+            });
+        }
+
+        // Modified loadPublications function
+        async function loadPublications(filter = 'all') {
+            try {
+                console.log('Fetching publications.bib...');
+                const response = await fetch('https://raw.githubusercontent.com/dvij/dvij.github.io/main/publications.bib');
+                const bibtex = await response.text();
+                console.log('Fetched bibtex content:', bibtex.substring(0, 100) + '...'); // Log first 100 chars
+
+                console.log('Parsing bibtex...');
+                const entries = parseBibtex(bibtex);
+                console.log('Parsed entries:', entries);
+                displayPublications(entries, filter);
+            } catch (error) {
+                console.error('Error in loadPublications:', error);
+                document.getElementById('publication-list').innerHTML = '<li>Error loading publications. Please check the console for details.</li>';
+            }
         }
 
         // Load publications when the page loads
         window.onload = function() {
-            console.log('Window loaded, calling loadPublications...');
+            console.log('Window loaded, setting up filters and loading publications...');
+            setupPublicationFilters();
             loadPublications();
         };
     </script>
