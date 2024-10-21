@@ -183,16 +183,25 @@
     </main>
 
  <script>
-        // Function to load script dynamically
-        function loadScript(url, callback) {
-            var script = document.createElement('script');
-            script.type = 'text/javascript';
-            script.src = url;
-            script.onload = callback;
-            script.onerror = function() {
-                console.error('Failed to load script:', url);
-            };
-            document.head.appendChild(script);
+        // Simple BibTeX parser
+        function parseBibtex(bibtex) {
+            const entries = [];
+            const entryRegex = /@(\w+)\s*\{([^,]*),\s*((?:[^=,\s]+\s*=\s*(?:\{(?:\{.*?\}|.)*?\}|"(?:\\"|[^"])*"|[^,\s]*)\s*,?\s*)*)\}/g;
+            const fieldRegex = /(\w+)\s*=\s*(\{(?:\{.*?\}|.)*?\}|"(?:\\"|[^"])*"|[^,\s]*)/g;
+
+            let match;
+            while ((match = entryRegex.exec(bibtex)) !== null) {
+                const [, type, key, fieldsString] = match;
+                const fields = {};
+                let fieldMatch;
+                while ((fieldMatch = fieldRegex.exec(fieldsString)) !== null) {
+                    let [, name, value] = fieldMatch;
+                    value = value.replace(/^\{|\}$/g, '').replace(/\\&/g, '&');
+                    fields[name.toLowerCase()] = value;
+                }
+                entries.push({ type, key, fields });
+            }
+            return entries;
         }
 
         // Function to fetch and parse BibTeX file
@@ -203,21 +212,10 @@
                 const bibtex = await response.text();
                 console.log('Fetched bibtex content:', bibtex.substring(0, 100) + '...'); // Log first 100 chars
 
-                console.log('Loading bibtexParse library...');
-                loadScript('https://cdnjs.cloudflare.com/ajax/libs/bibtex-parse-js/0.0.24/bibtexParse.min.js', function() {
-                    console.log('bibtexParse library loaded, parsing bibtex...');
-                    try {
-                        if (typeof bibtexParse === 'undefined') {
-                            throw new Error('bibtexParse is not defined');
-                        }
-                        const entries = bibtexParse.toJSON(bibtex);
-                        console.log('Parsed entries:', entries);
-                        displayPublications(entries);
-                    } catch (parseError) {
-                        console.error('Error parsing bibtex:', parseError);
-                        document.getElementById('publication-list').innerHTML = '<li>Error parsing publications. Please check the console for details.</li>';
-                    }
-                });
+                console.log('Parsing bibtex...');
+                const entries = parseBibtex(bibtex);
+                console.log('Parsed entries:', entries);
+                displayPublications(entries);
             } catch (error) {
                 console.error('Error in loadPublications:', error);
                 document.getElementById('publication-list').innerHTML = '<li>Error loading publications. Please check the console for details.</li>';
@@ -245,14 +243,14 @@
         // Function to format a single publication
         function formatPublication(entry) {
             console.log('Formatting entry:', entry);
-            if (!entry || !entry.entryTags) {
+            if (!entry || !entry.fields) {
                 console.error('Invalid entry:', entry);
                 return 'Invalid publication entry';
             }
-            const authors = entry.entryTags.author ? entry.entryTags.author.split(' and ').join(', ') : 'Unknown Author';
-            const title = entry.entryTags.title ? entry.entryTags.title.replace(/[{}]/g, '') : 'Untitled';
-            const year = entry.entryTags.year || 'Unknown Year';
-            const journal = entry.entryTags.journal || entry.entryTags.booktitle || 'Unknown Publication';
+            const authors = entry.fields.author ? entry.fields.author.split(' and ').join(', ') : 'Unknown Author';
+            const title = entry.fields.title ? entry.fields.title.replace(/[{}]/g, '') : 'Untitled';
+            const year = entry.fields.year || 'Unknown Year';
+            const journal = entry.fields.journal || entry.fields.booktitle || 'Unknown Publication';
             
             return `${authors} (${year}). "${title}". <em>${journal}</em>.`;
         }
