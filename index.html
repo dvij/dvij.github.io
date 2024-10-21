@@ -195,13 +195,22 @@
         // Function to fetch and parse BibTeX file
         async function loadPublications() {
             try {
-                const response = await fetch('https://raw.githubusercontent.com/dvij/dvij.github.io/master/publications.bib');
+                console.log('Fetching publications.bib...');
+                const response = await fetch('https://raw.githubusercontent.com/dvij/dvij.github.io/main/publications.bib');
                 const bibtex = await response.text();
-                
-                // Load bibtexParse library and then parse the publications
+                console.log('Fetched bibtex content:', bibtex.substring(0, 100) + '...'); // Log first 100 chars
+
+                console.log('Loading bibtexParse library...');
                 loadScript('https://cdnjs.cloudflare.com/ajax/libs/bibtex-parse-js/0.0.24/bibtexParse.min.js', function() {
-                    const entries = bibtexParse.toJSON(bibtex);
-                    displayPublications(entries);
+                    console.log('bibtexParse library loaded, parsing bibtex...');
+                    try {
+                        const entries = bibtexParse.toJSON(bibtex);
+                        console.log('Parsed entries:', entries);
+                        displayPublications(entries);
+                    } catch (parseError) {
+                        console.error('Error parsing bibtex:', parseError);
+                        document.getElementById('publication-list').innerHTML = '<li>Error parsing publications. Please check the console for details.</li>';
+                    }
                 });
             } catch (error) {
                 console.error('Error loading publications:', error);
@@ -211,20 +220,28 @@
 
         // Function to display publications
         function displayPublications(entries) {
+            console.log('Displaying publications...');
             const publicationList = document.getElementById('publication-list');
-            entries.forEach(entry => {
-                const li = document.createElement('li');
-                li.innerHTML = formatPublication(entry);
-                publicationList.appendChild(li);
-            });
+            if (entries && entries.length > 0) {
+                entries.forEach(entry => {
+                    const li = document.createElement('li');
+                    li.innerHTML = formatPublication(entry);
+                    publicationList.appendChild(li);
+                });
+                console.log('Publications displayed successfully.');
+            } else {
+                console.log('No entries to display.');
+                publicationList.innerHTML = '<li>No publications found.</li>';
+            }
         }
 
         // Function to format a single publication
         function formatPublication(entry) {
-            const authors = entry.entryTags.author.split(' and ').join(', ');
-            const title = entry.entryTags.title.replace(/[{}]/g, '');
-            const year = entry.entryTags.year;
-            const journal = entry.entryTags.journal || entry.entryTags.booktitle || '';
+            console.log('Formatting entry:', entry);
+            const authors = entry.entryTags.author ? entry.entryTags.author.split(' and ').join(', ') : 'Unknown Author';
+            const title = entry.entryTags.title ? entry.entryTags.title.replace(/[{}]/g, '') : 'Untitled';
+            const year = entry.entryTags.year || 'Unknown Year';
+            const journal = entry.entryTags.journal || entry.entryTags.booktitle || 'Unknown Publication';
             
             return `${authors} (${year}). "${title}". <em>${journal}</em>.`;
         }
