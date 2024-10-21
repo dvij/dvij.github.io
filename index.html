@@ -220,8 +220,8 @@
                     <p>Researcher (2016-2017)</p>
                 </li>
                 <li class="affiliation">
-                    <h3>Postdoctoral Fellow 3</h3>
-                    <p><a href="https://cmi.caltech.edu/"> Center for Mathematics of Information, Caltech </a></p>
+                    <h3><a href="https://cmi.caltech.edu/"> Center for Mathematics of Information, Caltech </a></h3>
+                    <p> Postdoctoral Fellow</p>
                 </li>
             </ul>
         </section>
@@ -275,7 +275,7 @@
             const currentYear = new Date().getFullYear();
             const filteredEntries = entries.filter(entry => {
                 if (filter === 'recent') {
-                    return currentYear - parseInt(entry.fields.year) <= 3; // Show last 3 years
+                    return currentYear - parseInt(entry.fields.year) <= 1; // Show last 3 years
                 }
                 return true; // 'all' filter
             });
