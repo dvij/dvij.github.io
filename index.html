@@ -182,13 +182,16 @@
         </section>
     </main>
 
-   <script>
+ <script>
         // Function to load script dynamically
         function loadScript(url, callback) {
             var script = document.createElement('script');
             script.type = 'text/javascript';
             script.src = url;
             script.onload = callback;
+            script.onerror = function() {
+                console.error('Failed to load script:', url);
+            };
             document.head.appendChild(script);
         }
 
@@ -204,6 +207,9 @@
                 loadScript('https://cdnjs.cloudflare.com/ajax/libs/bibtex-parse-js/0.0.24/bibtexParse.min.js', function() {
                     console.log('bibtexParse library loaded, parsing bibtex...');
                     try {
+                        if (typeof bibtexParse === 'undefined') {
+                            throw new Error('bibtexParse is not defined');
+                        }
                         const entries = bibtexParse.toJSON(bibtex);
                         console.log('Parsed entries:', entries);
                         displayPublications(entries);
@@ -213,7 +219,7 @@
                     }
                 });
             } catch (error) {
-                console.error('Error loading publications:', error);
+                console.error('Error in loadPublications:', error);
                 document.getElementById('publication-list').innerHTML = '<li>Error loading publications. Please check the console for details.</li>';
             }
         }
@@ -223,7 +229,8 @@
             console.log('Displaying publications...');
             const publicationList = document.getElementById('publication-list');
             if (entries && entries.length > 0) {
-                entries.forEach(entry => {
+                entries.forEach((entry, index) => {
+                    console.log(`Processing entry ${index}:`, entry);
                     const li = document.createElement('li');
                     li.innerHTML = formatPublication(entry);
                     publicationList.appendChild(li);
@@ -238,6 +245,10 @@
         // Function to format a single publication
         function formatPublication(entry) {
             console.log('Formatting entry:', entry);
+            if (!entry || !entry.entryTags) {
+                console.error('Invalid entry:', entry);
+                return 'Invalid publication entry';
+            }
             const authors = entry.entryTags.author ? entry.entryTags.author.split(' and ').join(', ') : 'Unknown Author';
             const title = entry.entryTags.title ? entry.entryTags.title.replace(/[{}]/g, '') : 'Untitled';
             const year = entry.entryTags.year || 'Unknown Year';
@@ -247,7 +258,10 @@
         }
 
         // Load publications when the page loads
-        window.onload = loadPublications;
+        window.onload = function() {
+            console.log('Window loaded, calling loadPublications...');
+            loadPublications();
+        };
     </script>
 </body>
 </html>
