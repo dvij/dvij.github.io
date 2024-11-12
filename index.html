@@ -446,7 +446,7 @@
         }
 
         // Modified loadPublications function
-        async function loadPublications(filter = 'all') {
+        async function loadPublications(filter = 'recent') {
             try {
                 console.log('Fetching publications.bib...');
                 const response = await fetch('https://raw.githubusercontent.com/dvij/dvij.github.io/master/publications.bib');
