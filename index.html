@@ -139,17 +139,71 @@
             background-color: #4285F4;
             color: white;
         }
+            .tutorial-item {
+            margin-bottom: 1.5em;
+            padding: 1em;
+            border-left: 4px solid #34A853;  /* Google green for variety */
+            background-color: #f9f9f9;
+            transition: all 0.3s ease;
+        }
+        .tutorial-item:hover {
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .tutorial-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 0.5em;
+        }
+        .tutorial-description {
+            color: #666;
+            margin-bottom: 0.5em;
+        }
+        .tutorial-link {
+            display: inline-block;
+            padding: 0.3em 0.6em;
+            background-color: #34A853;
+            color: white;
+            text-decoration: none;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+        .tutorial-link:hover {
+            background-color: #2d9147;
+        }
+        .social-icon {
+            width: 24px;
+            height: 24px;
+            margin: 0 0.5rem;
+            transition: transform 0.2s ease;
+        }
+        .social-icon:hover {
+            transform: scale(1.1);
+        }
+        .mentoring-section {
+            margin-top: 1em;
+        }
+        .mentoring-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .mentoring-item {
+            margin-bottom: 1em;
+            padding-left: 1em;
+            border-left: 3px solid #FBBC05;  /* Google yellow */
+        }
     </style>
 </head>
 <body>
     <header>
-        <img src="https://raw.githubusercontent.com/dvij/dvij.github.io/master/img/Dj.jpg" alt="Krishnamurthy (Dj) Dvijotham" class="profile-pic">
+        <img src="https://github.com/dvij.png" alt="Krishnamurthy (Dj) Dvijotham" class="profile-pic">
         <h1>Krishnamurthy (Dj) Dvijotham</h1>
         <p class="job-title">Research Lead, Reliable and Secure AI</p>
         <p class="affiliation">ServiceNow Research</p>
         <div class="contact-icons">
-            <a href="mailto:dvij@cs.washington.edu"><img src="https://raw.githubusercontent.com/dvij/dvij.github.io/master/img/email.jpeg" alt="Email"></a>
-            <a href="https://scholar.google.com/citations?user=BUtloecAAAAJ&hl=en"><img src="https://raw.githubusercontent.com/dvij/dvij.github.io/master/img/icon-192.png" alt="Academic Profile"></a>
+            <a href="mailto:your.email@example.com"><img src="https://raw.githubusercontent.com/dvij/dvij.github.io/main/email-icon.png" alt="Email" class="social-icon"></a>
+            <a href="#"><img src="https://raw.githubusercontent.com/dvij/dvij.github.io/main/academic-icon.png" alt="Academic Profile" class="social-icon"></a>
+            <a href="https://github.com/dvij"><img src="https://raw.githubusercontent.com/dvij/dvij.github.io/main/github-icon.png" alt="GitHub" class="social-icon"></a>
+            <a href="https://twitter.com/yourusername" target="_blank"><img src="https://raw.githubusercontent.com/dvij/dvij.github.io/main/twitter-icon.png" alt="Twitter" class="social-icon"></a>
         </div>
     </header>
 
@@ -159,10 +213,12 @@
             <li><a href="#research">Research</a></li>
             <li><a href="#projects">Projects</a></li>
             <li><a href="#publications">Publications</a></li>
+            <li><a href="#mentoring">Mentoring</a></li>
             <li><a href="#background">Background</a></li>
         </ul>
     </nav>
 
+   
     <main>
         <section id="about">
             <h2>About Me</h2>
@@ -223,6 +279,45 @@
                 </li>
             </ul>
         </section>
+
+             <section id="mentoring">
+        <h2>Mentoring & Tutorials</h2>
+        
+        <!-- Tutorials Subsection -->
+        <h3>Tutorials & Educational Resources</h3>
+        <div class="tutorial-list">
+            <div class="tutorial-item">
+                <div class="tutorial-title">Introduction to Reliable and Secure AI</div>
+                <div class="tutorial-description">A comprehensive tutorial covering fundamental concepts in building reliable and secure AI systems, including adversarial robustness, privacy, and safety considerations.</div>
+                <a href="#" class="tutorial-link">View Tutorial</a>
+            </div>
+            
+            <div class="tutorial-item">
+                <div class="tutorial-title">Verification Methods for Neural Networks</div>
+                <div class="tutorial-description">Step-by-step guide to understanding and implementing verification methods for neural networks, with practical examples and case studies.</div>
+                <a href="#" class="tutorial-link">View Tutorial</a>
+            </div>
+        </div>
+
+        <!-- Mentoring Activities Subsection -->
+        <h3 class="mentoring-section">Mentoring Activities</h3>
+        <ul class="mentoring-list">
+            <li class="mentoring-item">
+                <h4>PhD Student Mentoring</h4>
+                <p>Actively mentoring PhD students in the areas of machine learning robustness and verification. If you're interested in working with me, please reach out via email.</p>
+            </li>
+            
+            <li class="mentoring-item">
+                <h4>Research Internships</h4>
+                <p>Offering research internship opportunities at ServiceNow Research in the field of Reliable and Secure AI. Applications typically open in the fall for summer internships.</p>
+            </li>
+            
+            <li class="mentoring-item">
+                <h4>Workshop Organization</h4>
+                <p>Organizing workshops and tutorial sessions at major conferences to foster knowledge sharing and collaboration in the field of AI safety and reliability.</p>
+            </li>
+        </ul>
+    </section>
     </main>
 
  <script>
