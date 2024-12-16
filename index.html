@@ -412,33 +412,67 @@
             }
         }
 
-     function displayPublications(entries, filter = 'all') {
-            console.log('Displaying publications...');
-            const publicationList = document.getElementById('publication-list');
-            publicationList.innerHTML = ''; // Clear existing entries
-            
-            const currentYear = new Date().getFullYear();
-            const filteredEntries = entries.filter(entry => {
-                if (filter === 'recent') {
-                    return currentYear - parseInt(entry.fields.year) <= 1; // Show last 3 years
-                }
-                return true; // 'all' filter
-            });
-
-            if (filteredEntries.length > 0) {
-                filteredEntries.forEach((entry, index) => {
-                    console.log(`Processing entry ${index}:`, entry);
-                    const li = document.createElement('li');
-                    li.className = 'publication-item';
-                    li.innerHTML = formatPublication(entry);
-                    publicationList.appendChild(li);
-                });
-                console.log('Publications displayed successfully.');
-            } else {
-                console.log('No entries to display.');
-                publicationList.innerHTML = '<li>No publications found.</li>';
+        function displayPublications(entries, filter = 'all') {
+        console.log('Displaying publications...');
+        const publicationList = document.getElementById('publication-list');
+        publicationList.innerHTML = '';
+        
+        const currentYear = new Date().getFullYear();
+        let filteredEntries = entries.filter(entry => {
+            if (filter === 'recent') {
+                return currentYear - parseInt(entry.fields.year) <= 3;
             }
+            return true;
+        });
+
+        // Sort entries by year in reverse chronological order
+        filteredEntries.sort((a, b) => {
+            const yearA = parseInt(a.fields.year) || 0;
+            const yearB = parseInt(b.fields.year) || 0;
+            if (yearA !== yearB) {
+                return yearB - yearA; // Sort by year in descending order
+            }
+            // If years are equal, sort by month if available
+            const monthA = a.fields.month ? getMonthNumber(a.fields.month) : 0;
+            const monthB = b.fields.month ? getMonthNumber(b.fields.month) : 0;
+            return monthB - monthA;
+        });
+
+        if (filteredEntries.length > 0) {
+            filteredEntries.forEach((entry, index) => {
+                const li = document.createElement('li');
+                li.className = 'publication-item';
+                if (entry.fields.award === 'best-paper') {
+                    li.className += ' award-publication';
+                }
+                li.innerHTML = formatPublication(entry);
+                publicationList.appendChild(li);
+            });
+            console.log('Publications displayed successfully.');
+        } else {
+            console.log('No entries to display.');
+            publicationList.innerHTML = '<li>No publications found.</li>';
         }
+    }
+
+    // Helper function to convert month names/abbreviations to numbers
+    function getMonthNumber(month) {
+        const months = {
+            'jan': 1, 'january': 1,
+            'feb': 2, 'february': 2,
+            'mar': 3, 'march': 3,
+            'apr': 4, 'april': 4,
+            'may': 5,
+            'jun': 6, 'june': 6,
+            'jul': 7, 'july': 7,
+            'aug': 8, 'august': 8,
+            'sep': 9, 'september': 9,
+            'oct': 10, 'october': 10,
+            'nov': 11, 'november': 11,
+            'dec': 12, 'december': 12
+        };
+        return months[month.toLowerCase()] || 0;
+    }
         const awardIcon = `
             <svg class="award-icon" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                 <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 2.18l7 3.12v4.7c0 4.54-2.77 8.62-7 10.19-4.23-1.57-7-5.65-7-10.19v-4.7l7-3.12z"/>
