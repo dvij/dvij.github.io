@@ -251,7 +251,8 @@
         </section>
 
         <section id="publications">
-            <h2>Publications</h2>
+            <h2>Selected Publications</h2>
+            Please visit <a href="https://scholar.google.com/citations?user=BUtloecAAAAJ&hl=en"> </a> for a complete list of publications
             <ul id="publication-list"></ul>
         </section>
 
@@ -430,26 +431,6 @@
             return html;
         }
 
-        // Function to set up publication filters
-        function setupPublicationFilters() {
-            const filtersHTML = `
-                <div class="publication-filters">
-                    <button class="filter-button" data-filter="recent">Selected Publications</button>
-                </div>
-            `;
-            document.getElementById('publications').insertAdjacentHTML('afterbegin', filtersHTML);
-
-            // Add event listeners to filter buttons
-            document.querySelectorAll('.filter-button').forEach(button => {
-                button.addEventListener('click', function() {
-                    document.querySelectorAll('.filter-button').forEach(btn => btn.classList.remove('active'));
-                    this.classList.add('active');
-                    const filter = this.getAttribute('data-filter');
-                    loadPublications(filter);
-                });
-            });
-        }
-
         // Modified loadPublications function
         async function loadPublications(filter = 'all') {
             try {
@@ -471,7 +452,6 @@
         // Load publications when the page loads
         window.onload = function() {
             console.log('Window loaded, setting up filters and loading publications...');
-            setupPublicationFilters();
             loadPublications();
         };
     </script>
