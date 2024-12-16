@@ -191,6 +191,37 @@
             padding-left: 1em;
             border-left: 3px solid #FBBC05;  /* Google yellow */
         }
+         .publication-item {
+            position: relative;  /* Add this to position the award icon */
+            margin-bottom: 1.5em;
+            padding: 1em;
+            border-left: 4px solid #4285F4;
+            background-color: #f9f9f9;
+            transition: all 0.3s ease;
+        }
+        .award-icon {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 32px;
+            height: 32px;
+            color: #FFD700;  /* Gold color */
+            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.2));
+        }
+        .award-publication {
+            background-color: #fff8e8;  /* Slight golden background */
+            border-left-color: #FFD700;  /* Gold border */
+        }
+        .award-label {
+            display: inline-block;
+            margin-left: 0.5em;
+            padding: 0.2em 0.5em;
+            background-color: #FFD700;
+            color: #000;
+            border-radius: 3px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -408,6 +439,12 @@
                 publicationList.innerHTML = '<li>No publications found.</li>';
             }
         }
+        const awardIcon = `
+            <svg class="award-icon" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 2.18l7 3.12v4.7c0 4.54-2.77 8.62-7 10.19-4.23-1.57-7-5.65-7-10.19v-4.7l7-3.12z"/>
+                <path d="M12 7l-3 3 1 4 2-1 2 1 1-4-3-3z"/>
+            </svg>
+        `;
 
         // Function to format a single publication
         function formatPublication(entry) {
@@ -416,17 +453,25 @@
                 console.error('Invalid entry:', entry);
                 return 'Invalid publication entry';
             }
+            
             const authors = entry.fields.author ? entry.fields.author.split(' and ').join(', ') : 'Unknown Author';
             const title = entry.fields.title ? entry.fields.title.replace(/[{}]/g, '') : 'Untitled';
             const year = entry.fields.year || 'Unknown Year';
             const venue = entry.fields.journal || entry.fields.booktitle || 'Unknown Publication';
             const url = entry.fields.url || '';
+            const hasAward = entry.fields.award === 'best-paper';
             
-            let html = `<div class="publication-title">${title}</div>`;
+            let html = `<div class="publication-title">
+                ${title}
+                ${hasAward ? '<span class="award-label">Best Paper</span>' : ''}
+            </div>`;
             html += `<div class="publication-authors">${authors}</div>`;
             html += `<div class="publication-venue">${venue}, ${year}</div>`;
             if (url) {
                 html += `<a href="${url}" target="_blank" class="publication-link">View Paper</a>`;
+            }
+            if (hasAward) {
+                html += awardIcon;
             }
             return html;
         }
