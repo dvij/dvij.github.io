@@ -4,373 +4,106 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Krishnamurthy (Dj) Dvijotham - Research Lead</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        header {
-            text-align: center;
-            margin-bottom: 2rem;
-            padding: 1rem;
-            background-color: #f4f4f4;
-            border-radius: 10px;
-        }
-        .profile-pic {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            object-fit: cover;
-            margin-bottom: 1rem;
-        }
-        h1 {
-            font-size: 2rem;
-            margin: 0.5rem 0;
-        }
-        .job-title {
-            font-size: 1.2rem;
-            color: #666;
-            margin: 0.5rem 0;
-        }
-        .affiliation {
-            font-size: 1.2rem;
-            color: #4285F4;
-            margin: 0.5rem 0;
-        }
-        .contact-icons {
-            margin-top: 1rem;
-        }
-        .contact-icons a {
-            margin: 0 0.5rem;
-            text-decoration: none;
-        }
-        .contact-icons img {
-            width: 24px;
-            height: 24px;
-        }
-        nav {
-            background-color: #333;
-            color: white;
-            padding: 0.5rem;
-            margin-bottom: 1rem;
-        }
-        nav ul {
-            list-style-type: none;
-            padding: 0;
-            display: flex;
-            justify-content: space-around;
-        }
-        nav ul li a {
-            color: white;
-            text-decoration: none;
-        }
-        section {
-            margin-bottom: 2rem;
-        }
-        .project {
-            margin-bottom: 1rem;
-        }
-        .project img {
-            width: 100px;
-            height: 100px;
-            object-fit: cover;
-            margin-right: 1rem;
-        }
-        .citation {
-            font-size: 0.8em;
-            vertical-align: super;
-        }
-        .publication-list {
-            list-style-type: none;
-            padding: 0;
-        }
-        .publication-item {
-            margin-bottom: 1.5em;
-            padding: 1em;
-            border-left: 4px solid #4285F4;
-            background-color: #f9f9f9;
-            transition: all 0.3s ease;
-        }
-        .publication-item:hover {
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .publication-title {
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 0.5em;
-        }
-        .publication-authors {
-            font-style: italic;
-            color: #666;
-        }
-        .publication-venue {
-            color: #4285F4;
-        }
-        .publication-link {
-            display: inline-block;
-            margin-top: 0.5em;
-            padding: 0.3em 0.6em;
-            background-color: #4285F4;
-            color: white;
-            text-decoration: none;
-            border-radius: 3px;
-            font-size: 0.9em;
-        }
-        .publication-link:hover {
-            background-color: #3367D6;
-        }
-        .publication-filters {
-            margin-bottom: 1em;
-        }
-        .filter-button {
-            margin-right: 0.5em;
-            padding: 0.5em 1em;
-            background-color: #f0f0f0;
-            border: none;
-            border-radius: 3px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-        .filter-button:hover, .filter-button.active {
-            background-color: #4285F4;
-            color: white;
-        }
-            .tutorial-item {
-            margin-bottom: 1.5em;
-            padding: 1em;
-            border-left: 4px solid #34A853;  /* Google green for variety */
-            background-color: #f9f9f9;
-            transition: all 0.3s ease;
-        }
-        .tutorial-item:hover {
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .tutorial-title {
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 0.5em;
-        }
-        .tutorial-description {
-            color: #666;
-            margin-bottom: 0.5em;
-        }
-        .tutorial-link {
-            display: inline-block;
-            padding: 0.3em 0.6em;
-            background-color: #34A853;
-            color: white;
-            text-decoration: none;
-            border-radius: 3px;
-            font-size: 0.9em;
-        }
-        .tutorial-link:hover {
-            background-color: #2d9147;
-        }
-        .social-icon {
-            width: 24px;
-            height: 24px;
-            margin: 0 0.5rem;
-            transition: transform 0.2s ease;
-        }
-        .social-icon:hover {
-            transform: scale(1.1);
-        }
-        .mentoring-section {
-            margin-top: 1em;
-        }
-        .mentoring-list {
-            list-style-type: none;
-            padding: 0;
-        }
-        .mentoring-item {
-            margin-bottom: 1em;
-            padding-left: 1em;
-            border-left: 3px solid #FBBC05;  /* Google yellow */
-        }
-         .publication-item {
-            position: relative;  /* Add this to position the award icon */
-            margin-bottom: 1.5em;
-            padding: 1em;
-            border-left: 4px solid #4285F4;
-            background-color: #f9f9f9;
-            transition: all 0.3s ease;
-        }
-        .award-icon {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            width: 32px;
-            height: 32px;
-            color: #FFD700;  /* Gold color */
-            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.2));
-        }
-        .award-publication {
-            background-color: #fff8e8;  /* Slight golden background */
-            border-left-color: #FFD700;  /* Gold border */
-        }
-        .award-label {
-            display: inline-block;
-            margin-left: 0.5em;
-            padding: 0.2em 0.5em;
-            background-color: #FFD700;
-            color: #000;
-            border-radius: 3px;
-            font-size: 0.8em;
-            font-weight: bold;
-        }
-    </style>
+    <link rel="stylesheet" href="new_styles.css">
 </head>
 <body>
-    <header>
-        <img src="https://raw.githubusercontent.com/dvij/dvij.github.io/master/img/Dj.jpg" alt="Krishnamurthy (Dj) Dvijotham" class="profile-pic">
-        <h1>Krishnamurthy (Dj) Dvijotham</h1>
-        <p class="job-title">Research Lead, Reliable and Secure AI</p>
-        <p class="affiliation">ServiceNow Research</p>
-        <div class="contact-icons">
-            <a href="mailto:dvij@cs.washington.edu"><img src="https://raw.githubusercontent.com/dvij/dvij.github.io/master/img/email.jpeg" alt="Email" class="social-icon"></a>
-            <a href="https://scholar.google.com/citations?user=BUtloecAAAAJ&hl=en"><img src="https://raw.githubusercontent.com/dvij/dvij.github.io/master/img/icon.png" alt="Academic Profile" class="social-icon"></a>
-            <a href="https://twitter.com/djdvij" target="_blank"><img src="https://raw.githubusercontent.com/dvij/dvij.github.io/master/img/free-twitter-logo-icon-2429-thumb.png" alt="Twitter" class="social-icon"></a>
-        </div>
-    </header>
+<body>
+    <div class="container">
+        <header>
+            <h1 class="profile-name">Krishnamurthy (Dj) Dvijotham</h1>
+            <p class="profile-title">Research Lead, Reliable and Secure AI</p>
+            <p class="profile-contact">
+                <a href="mailto:dvij@cs.washington.edu">dvij@cs.washington.edu</a>
+            </p>
+            <div class="profile-links">
+                <a href="https://scholar.google.com/citations?user=BUtloecAAAAJ&hl=en">Google Scholar</a>
+                <a href="https://twitter.com/djdvij">Twitter</a>
+            </div>
+        </header>
 
-    <nav>
-        <ul>
-            <li><a href="#about">About</a></li>
-            <li><a href="#projects">Projects</a></li>
-            <li><a href="#publications">Publications</a></li>
-            <li><a href="#mentoring">Mentoring</a></li>
-            <li><a href="#background">Background</a></li>
-        </ul>
-    </nav>
+        <main>
+            <section id="about">
+                <h2>About Me</h2>
+                <p>I lead the <a href="https://www.servicenow.com/blogs/2024/securing-ai-enterprise"> Reliable and Secure AI program </a> at <a href="https://www.servicenow.com/research/"> ServiceNow Research </a>. My research intersts are diverse and cover several research areas and applications, with the common thread through most of my work being the use of mathematical tools (particularly from mathematical optimization and control theory) to improve the robustness and security of real world systems.</p>
+            </section>
 
-   
-    <main>
-        <section id="about">
-            <h2>About Me</h2>
-            <p>I lead the <a href="https://www.servicenow.com/blogs/2024/securing-ai-enterprise"> Reliable and Secure AI program </a> at <a href="https://www.servicenow.com/research/"> ServiceNow Research </a>. My research intersts are diverse and cover several research areas and applications, with the common thread through most of my work being the use of mathematical tools (particularly from mathematical optimization and control theory) to improve the robustness and security of real world systems. 
-
-        <section id="projects">
-            <h2>Recent Projects</h2>
-            <div class="project">
-                <div>
-                     <img src="https://raw.githubusercontent.com/dvij/dvij.github.io/master/img/attack.jpeg" alt="AI Attacks Project" style="float:left; margin-right: 15px;">
-               
+            <section id="projects">
+                <h2>Recent Projects</h2>
+                <div class="project">
                     <h3>Attacks against AI systems</h3>
-                    <p> I am interested in attacks that expose vulnerabilities of AI systems and quantify risks associated with deploying AI. Examples include work demonstrating how to <a href="https://arxiv.org/abs/2403.06634"> "steal" parts of production grade LLMs from public facing APIs </a>, quantifying robustness of the Gemini family of models to <a href="https://arxiv.org/pdf/2403.05530"> jailbreaks and prompt injection attacks </a>, and quantifying the <a href="https://arxiv.org/abs/1812.01647"> risk of catastrophic failure </a> in AI agents.
-                    </p></div>
-            <div class="project">
-                <div>
-                    <img src="https://raw.githubusercontent.com/dvij/dvij.github.io/master/img/human-ai.png" alt="Human-AI Project" style="float:left; margin-right: 15px;">
-                
+                    <p> I am interested in attacks that expose vulnerabilities of AI systems and quantify risks associated with deploying AI. Examples include work demonstrating how to <a href="https://arxiv.org/abs/2403.06634"> "steal" parts of production grade LLMs from public facing APIs </a>, quantifying robustness of the Gemini family of models to <a href="https://arxiv.org/pdf/2403.05530"> jailbreaks and prompt injection attacks </a>, and quantifying the <a href="https://arxiv.org/abs/1812.01647"> risk of catastrophic failure </a> in AI agents.</p>
+                </div>
+                <div class="project">
                     <h3>Human AI collaboration and Human Factors in Aligning AI</h3>
                     <p>Moder AI systems are often best used as assistants. This brings the question: How should AI be designed to best collaborate and communicate with Humans? What are the right modes of communication, and should communication be restricted to specific forms to best facilitate this collaboration? In a series of works from the past few years, we have made progress on understanding this, developing systems that <a href="https://deepmind.google/discover/blog/codoc-developing-reliable-ai-tools-for-healthcare/"> optimally integrate predictions from human clinicians and AI </a>for breast cancer and TB diagnosis, showing how <a href="https://ojs.aaai.org/index.php/AAAI/article/view/20465"> human perception of the AI </a> and <a href="https://dl.acm.org/doi/abs/10.1145/3600211.3604692"> AI understanding of human uncertainty </a> affects collaborative performance, and studying the forms <a href="https://ojs.aaai.org/index.php/AIES/article/view/31637"> human feedback should take </a> when collecting data for AI alignment.</p>
                 </div>
-            </div>
-            <div class="project">
-                <div>
-                    <img src="https://raw.githubusercontent.com/dvij/dvij.github.io/master/img/certified.png" alt="Robust and Private DL Project" style="float:left; margin-right: 15px;">
-                
+                <div class="project">
                     <h3>Certifiably Secure AI</h3>
                     <p>AI systems are increasingly deployed in agentic scenarios with access to sensitive information and the ability to take consequentail actions on behalf of a user. These deployments create serious privacy and security risks. Anticipating exactly what attackers may do here is hard as the possiblities increase, and this project seeks to develop mathematical guarantees on the worst case behavior of AI or AI-powered systems. A couple of recent examples is an approach to <a href="https://openreview.net/forum?id=HF8PmUAaFu"> certifying the robustness of learning algorithms against adaptive and dynamic data poisoning attacks </a>, and the development of <a href="https://arxiv.org/abs/2310.06771"> superior correlated noise mechanims for differentially private machine learning </a>. </p>
                 </div>
-            </div>
-            
-        </section>
+            </section>
 
-        <section id="publications">
-            <h2>Selected Publications</h2>
-            Please visit <a href="https://scholar.google.com/citations?user=BUtloecAAAAJ&hl=en"> my google scholar page</a> for a complete list of publications, selected representative publications are listed below
-            <ul id="publication-list"></ul>
-        </section>
+            <section id="publications">
+                <h2>Selected Publications</h2>
+                <p>Please visit <a href="https://scholar.google.com/citations?user=BUtloecAAAAJ&hl=en"> my google scholar page</a> for a complete list of publications, selected representative publications are listed below</p>
+                <ul id="publication-list" class="publication-list"></ul>
+            </section>
 
-        
+            <section id="mentoring">
+                <h2>Mentoring & Tutorials</h2>
+                <h3>Tutorials & Educational Resources</h3>
+                <div class="tutorial-list">
+                    <p> I enjoy giving tutorials on areas of research I have worked on, some recent ones are listed below:</p>
+                    <div class="tutorial-item">
+                        <div class="tutorial-title">How to Work With Real Humans in Human-AI Systems</div>
+                        <div class="tutorial-description">A comprehensive tutorial covering fundamental concepts in building AI systems that collaborate effectively with humans.</div>
+                        <a href="https://neurips.cc/virtual/2023/tutorial/73951" class="tutorial-link">View Tutorial</a>
+                    </div>
+                    <div class="tutorial-item">
+                        <div class="tutorial-title">Robustness certification for deep learning</div>
+                        <div class="tutorial-description">A tutorial overview of my work on certifying robustness of neural networks to adversarial perturbations.</div>
+                        <a href="https://www.youtube.com/watch?v=wT58_0V1-c4" class="tutorial-link">View Tutorial</a>
+                    </div>
+                </div>
 
-             <section id="mentoring">
-        <h2>Mentoring & Tutorials</h2>
-        
-        <!-- Tutorials Subsection -->
-        <h3>Tutorials & Educational Resources</h3>
-        <div class="tutorial-list">
-            <p> I enjoy giving tutorials on areas of research I have worked on, some recent ones are listed below:</p>
-            <div class="tutorial-item">
-                <div class="tutorial-title">How to Work With Real Humans in Human-AI Systems</div>
-                <div class="tutorial-description">A comprehensive tutorial covering fundamental concepts in building AI systems that collaborate effectively with humans.</div>
-                <a href="https://neurips.cc/virtual/2023/tutorial/73951" class="tutorial-link">View Tutorial</a>
-            </div>
-            
-            <div class="tutorial-item">
-                <div class="tutorial-title">Robustness certification for deep learning</div>
-                <div class="tutorial-description">A tutorial overview of my work on certifying robustness of neural networks to adversarial perturbations.</div>
-                <a href="https://www.youtube.com/watch?v=wT58_0V1-c4" class="tutorial-link">View Tutorial</a>
-            </div>
-        </div>
-
-        <!-- Mentoring Activities Subsection -->
-        <h3 class="mentoring-section">Mentoring Activities</h3>
-        <ul class="mentoring-list">
-                <h3>Past and current advisees</h3>
-                I have been fortunate to work with some wonderful student collaborators over the years (if you should be on this list but aren't please reach out):
-                <li>
-                    <li> <h4> 2024 </h4>
-                        <p> <a href="https://collinskatie.github.io/"> Katherine Collins </a> (PhD student at University of Cambridge)</p>
-                        <p> <a href="https://krishnap25.github.io/"> Krishna Pillutla </a>(Postdoc at Google Research -> Faculty at IIT Madras) </p>
-                        <p> <a href="https://saiyuelyu.github.io/"> Saiyue Lu </a> (PhD student at UBC Vancouver)  </p>
-                        <p>  <a href="https://scholar.google.com/citations?user=2qhIm78AAAAJ&hl=en"> Joshua Kazdan </a> (PhD student at Stanford) </p>
+                <h3 class="mentoring-section">Mentoring Activities</h3>
+                <ul class="mentoring-list">
+                    <h3>Past and current advisees</h3>
+                     I have been fortunate to work with some wonderful student collaborators over the years (if you should be on this list but aren't please reach out):
+                    <li>
+                        <h4>2024</h4>
+                        <p><a href="https://collinskatie.github.io/">Katherine Collins</a> (PhD student at University of Cambridge)</p>
+                        <p><a href="https://krishnap25.github.io/">Krishna Pillutla</a> (Postdoc at Google Research -> Faculty at IIT Madras)</p>
+                        <p><a href="https://saiyuelyu.github.io/">Saiyue Lu</a> (PhD student at UBC Vancouver)</p>
+                        <p><a href="https://scholar.google.com/citations?user=2qhIm78AAAAJ&hl=en">Joshua Kazdan</a> (PhD student at Stanford)</p>
                     </li>
-                   <li> <h4> 2023 </h4>
-                        <p> <a href="https://rabanser.dev/"> Stephan Rabanser </a> (PhD student at University of Toronto)</p>
-                        <p> <a href="https://www.rishabhtiwari.org/"> Rishabh Tiwari </a>(Predoctoral fellow at Google Research -> PhD Student at UC Berkeley) </p>
-                        <p> <a href="https://kothasuhas.github.io/"> Suhas Kotha </a> (Undegraduate at CMU -> PhD Student at Stanford)  </p>
+                    <li>
+                        <h4>2023</h4>
+                        <p><a href="https://rabanser.dev/">Stephan Rabanser</a> (PhD student at University of Toronto)</p>
+                        <p><a href="https://www.rishabhtiwari.org/">Rishabh Tiwari</a> (Predoctoral fellow at Google Research -> PhD Student at UC Berkeley)</p>
+                        <p><a href="https://kothasuhas.github.io/">Suhas Kotha</a> (Undegraduate at CMU -> PhD Student at Stanford)</p>
                     </li>
-                    <li> <h4> 2022 </h4>
-                        <p> <a href="https://www.comp.nus.edu.sg/~mstrobel/"> Martin Strobel </a> (PhD student at NUS)</p>
-                        <p> <a href="https://scholar.google.com/citations?user=UEAtkFYAAAAJ&hl=en"> Rishav Chourasia </a>(PhD Student at NUS) </p>
-                    </li>
-                    <li> <h4> 2021 </h4>
-                        <p> <a href="https://sites.google.com/view/elizabethbondi"> Elizabeth Bondi-Kelly </a> (PhD student at USC -> Faculty at University of Michigan)</p>
-                        <p> <a href="https://harkiratbehl.github.io/"> Harkirat Behl </a>(PhD Student at Oxford -> Researcher at Microsoft Research) </p>
-                        <p> <a href="https://davidstutz.de/"> David Stutz </a>(PhD Student at Max Planck -> Researcher at Google DeepMind)</p>
-                    </li>
-                    
-            <li> <h4> 2019 </h4>
-                        <p> <a href="https://lilywenglab.github.io/"> Lily Weng </a> (PhD student at USC -> Faculty at UCSD)</p>
-                        <p> <a href="https://dathath.github.io/"> Sumanth Dathathri </a>(PhD Student at Caltech -> Researcher at Google DeepMind) </p>
-                <p> <a href="https://scholar.google.com/citations?user=SaHRjy4AAAAJ&hl=en"> Johannes Welbl </a>(PhD Student at UCL -> Researcher at Google DeepMind) </p>
-                    </li>
-              <li> <h4> 2018 </h4>
-                        <p> <a href="https://scholar.google.co.uk/citations?user=7cqQFSoAAAAJ&hl=en"> Rudy Bunel </a> (PhD student at Oxford -> Researcher at Google DeepMind)</p>
-                        <p> <a href="https://chenglongwang.org/">Chenglong Wang </a>(PhD Student at University of Washington -> Researcher at Microsoft Research )</p>
-                    </li>
-            <li> <h4> 2017 </h4>
-                        <p> <a href="https://scholar.google.co.uk/citations?user=7cqQFSoAAAAJ&hl=en"> Haoxiang Yang </a> (PhD student at Northwestern -> Faculty at CUHK)</p>
-                <p> <a href="">Ben Rapone </a>(PhD Student at Washington State University -> ? )</p>
-                        <p> <a href="https://scholar.google.com/citations?user=sF2qvtIAAAAJ&hl=en">Thiagarajan Ramachandran </a>(Postdoc at PNNL -> Researcher at PNNL )</p>
-                    </li>
-        </ul>
-    </section>
+                </ul>
+            </section>
 
             <section id="background">
-            <h2>Past Affiliations</h2>
-            <ul>
-                <li class="affiliation">
-                    <h3><a href="https://deepmind.google/"> Google DeepMind </a> </h3>
-                    <p>Researcher (2017-2024)</p>
-                </li>
-                <li class="affiliation">
-                    <h3><a href="https://pnnl.gov"> Pacific Northwest National Laboratory </a> </h3>
-                    <p>Researcher (2016-2017)</p>
-                </li>
-                <li class="affiliation">
-                    <h3><a href="https://cmi.caltech.edu/"> Center for Mathematics of Information, Caltech </a></h3>
-                    <p> Postdoctoral Fellow</p>
-                </li>
-            </ul>
-        </section>
-    </main>
+                <h2>Past Affiliations</h2>
+                <ul>
+                    <li class="affiliation">
+                        <h3><a href="https://deepmind.google/">Google DeepMind</a></h3>
+                        <p>Researcher (2017-2024)</p>
+                    </li>
+                    <li class="affiliation">
+                        <h3><a href="https://pnnl.gov">Pacific Northwest National Laboratory</a></h3>
+                        <p>Researcher (2016-2017)</p>
+                    </li>
+                    <li class="affiliation">
+                        <h3><a href="https://cmi.caltech.edu/">Center for Mathematics of Information, Caltech</a></h3>
+                        <p>Postdoctoral Fellow</p>
+                    </li>
+                </ul>
+            </section>
+        </main>
 
  <script>
         // Simple BibTeX parser
