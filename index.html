@@ -210,6 +210,8 @@
             const year = entry.fields.year || 'Unknown Year';
             const venue = entry.fields.journal || entry.fields.booktitle || 'Unknown Publication';
             const url = entry.fields.url || '';
+            const blog = entry.fields.blog || '';
+            const code = entry.fields.code || '';
             const hasAward = entry.fields.award === 'best-paper';
             const hasStudentAward = entry.fields.award === 'best-student-paper';
 
@@ -222,7 +224,13 @@
             html += `<div class="publication-authors">${authors}</div>`;
             html += `<div class="publication-venue">${venue}, ${year}</div>`;
             if (url) {
-                html += `<a href="${url}" target="_blank" class="publication-link">View Paper</a>`;
+                html += `<a href="${url}" target="_blank" class="publication-link">Paper</a>`;
+            }
+            if (blog) {
+                html += `<a href="${url}" target="_blank" class="publication-link">Blog</a>`;
+            }
+            if (code) {
+                html += `<a href="${url}" target="_blank" class="publication-link">Code</a>`;
             }
             return html;
         }
