@@ -151,3 +151,58 @@ footer {
     margin-top: 0;
     color: #555;
 }
+
+.profile-pic {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 1rem;
+    float: right;
+}
+
+/* Dark Mode */
+body.dark-mode {
+    background-color: #121212;
+    color: #e0e0e0;
+}
+
+body.dark-mode h1, body.dark-mode h2, body.dark-mode h3 {
+    color: #e0e0e0;
+}
+
+body.dark-mode .profile-title, body.dark-mode .profile-contact, body.dark-mode .profile-contact a {
+    color: #bbb;
+}
+
+body.dark-mode .profile-links a {
+    color: #e0e0e0;
+    border-bottom-color: #555;
+}
+
+body.dark-mode h2 {
+    border-bottom-color: #555;
+}
+
+body.dark-mode .publication-authors, body.dark-mode .publication-venue {
+    color: #bbb;
+}
+
+body.dark-mode #background .affiliation p {
+    color: #bbb;
+}
+
+#dark-mode-toggle {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    padding: 10px;
+    background: #ccc;
+    border: none;
+    cursor: pointer;
+}
+
+body.dark-mode #dark-mode-toggle {
+    background: #555;
+    color: #e0e0e0;
+}
