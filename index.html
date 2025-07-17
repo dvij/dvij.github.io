@@ -11,7 +11,7 @@
     <div class="container">
         <header>
             <h1 class="profile-name">Krishnamurthy (Dj) Dvijotham</h1>
-            <p class="profile-title">Research Lead, Reliable and Secure AI</p>
+            <p class="profile-title">Research Scientist</p>
             <p class="profile-contact">
                 <a href="mailto:dvij@cs.washington.edu">dvij@cs.washington.edu</a>
             </p>
@@ -223,9 +223,6 @@
             html += `<div class="publication-venue">${venue}, ${year}</div>`;
             if (url) {
                 html += `<a href="${url}" target="_blank" class="publication-link">View Paper</a>`;
-            }
-            if (hasAward) {
-                html += awardIcon;
             }
             return html;
         }
