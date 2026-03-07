@@ -10,47 +10,43 @@ toc-depth: 3
 
 ## Motivating Problems
 
-The central question of this post — *which Nash equilibrium is welfare-maximizing, and can we find it?* — is not merely abstract. It arises concretely in settings that have been empirically studied and calibrated on real data. Here are three.
+The problem at the heart of this post is: given a potential game on the simplex, find the Nash equilibrium that maximizes aggregate welfare. Before diving into the math, it is worth understanding where this problem genuinely arises and why it matters.
 
-### R&D collaboration networks
+### Mixed-strategy equilibria in finite games
 
-Firms in technology-intensive industries simultaneously choose how much to invest in R&D and how much to produce. When firms have R&D collaboration agreements, spillovers lower each collaborator's production costs — but the same firms may also compete in the same product market, creating a tension between knowledge sharing and market rivalry.
+The most direct home for problem (P) is the theory of mixed-strategy Nash equilibria. In any finite normal-form game, a mixed strategy profile $x \in \Delta_n$ assigns probabilities to each pure strategy. When payoffs are multilinear in the mixed strategies — as they always are — the game is a potential game if and only if there exists a quadratic function $V(x) = x^\top A x + q^\top x$ such that each player's gain from deviating equals the change in $V$. Nash equilibria are the KKT points of maximizing $V$ over the product of simplices.
 
-König, Liu & Zenou (2019) develop and structurally estimate exactly this model on a panel of R&D alliances and company reports from pharmaceutical, chemical, and computer industries. The per-firm payoff takes the form
+Even in small finite games, there are generically multiple Nash equilibria, and they can differ drastically in social welfare. The problem of finding the *best* one — the welfare-maximizing Nash equilibrium — is the direct computational question this post addresses.
 
-$$\pi_i = (\alpha_i - c_i)q_i - q_i^2 - \rho \sum_{j \sim i} q_i q_j + q_i e_i + \phi \sum_{j \sim_R i} q_j e_i - \tfrac{1}{2}e_i^2$$
+Conitzer & Sandholm (2003) showed this is NP-hard in general, and moreover inapproximable: no polynomial-time algorithm can guarantee being within any constant factor of optimal welfare. So the question is not "can we solve the general case?" but "can we characterize natural, large subclasses where it is tractable?"
 
-where $e_i$ is R&D effort, $\phi \geq 0$ captures collaboration spillovers, $\rho \in [0,1)$ captures product substitutability, and the two networks — R&D partnerships and product-market competition — are distinct. In equilibrium, $e_i^* = q_i^* \propto$ the firm's Katz-Bonacich centrality in an effective network whose adjacency is $\phi A - \rho B$ — the spillover network minus the scaled competition matrix. When both $\phi$ and $\rho$ are nonzero, this effective interaction matrix can be **indefinite**: some firms benefit from neighbors' effort (through spillovers) while others are hurt (through competition).
+### Network games and social welfare
 
-The welfare stakes are substantial. König et al. find that *targeted* subsidies — calibrated to each firm's network position — improve total welfare by up to **80%** over the laissez-faire equilibrium, while uniform subsidies improve it by only **4%**. The optimal targeting is not determined by market share, patent count, or raw centrality alone; it requires knowing which equilibrium firms will coordinate on and which policy can shift that equilibrium toward the social optimum. This is precisely the computation we need to perform.
+A second important source of motivation comes from the large literature on network games, initiated by Ballester, Calvó-Armengol & Zenou (*Econometrica*, 2006) and developed by Bramoullé, Kranton & D'Amours (*AER*, 2014). In these models, each agent $i$ chooses an action $a_i \in \mathbb{R}_+$, and payoffs are linear-quadratic:
 
-### Education and peer effects
+$$u_i(a) = b_i a_i - \tfrac{1}{2}a_i^2 + \beta \sum_j G_{ij}\, a_i a_j$$
 
-Calvó-Armengol, Patacchini & Zenou (2009) study academic achievement among US adolescents using the Add Health dataset: 11,964 students across 199 friendship networks. The key empirical finding is that a student's academic effort at Nash equilibrium is proportional to their Katz-Bonacich centrality in the friendship network — a measure that counts all direct and indirect paths to the student, weighted by how far they are from her.
+The parameter $\beta > 0$ captures strategic complementarities (effort is more valuable when neighbors exert effort), $\beta < 0$ captures substitutes, and $G$ is the adjacency matrix of the interaction network. This game is a potential game with $V(a) = b^\top a - \frac{1}{2}\|a\|^2 + \frac{\beta}{2} a^\top G a$.
 
-The underlying utility is linear-quadratic:
+Bramoullé et al. show that the game's equilibrium structure is governed entirely by the lowest eigenvalue of $\beta G$: when $\beta \lambda_{\min}(G) > -1$ there is a unique interior equilibrium; when it falls below $-1$, stable equilibria exist in which some agents are inactive. This spectral threshold is exactly the boundary between a concave and an indefinite potential — the same boundary that separates easy and hard instances of (P).
 
-$$u_i = \theta_i z_i - \tfrac{1}{2}z_i^2 + \phi \sum_{j} g_{ij} z_i z_j$$
+Now consider what a social planner wants: to select or induce the equilibrium that maximizes $\sum_i u_i$. Galeotti, Golub & Goyal (*Econometrica*, 2020) study precisely this targeting problem: how should a planner allocate a limited budget of incentive changes to maximize welfare in such a network game? Their main result is that optimal targeting depends critically on the *principal components* of $G$ — the eigenvectors associated with the largest eigenvalues for strategic complements, and the smallest for substitutes. When there is a unique equilibrium, this is a clean optimization over intervention budgets. When the game has multiple equilibria — which requires an indefinite potential — the harder question of *which equilibrium to aim for* arises first, and that is exactly problem (P).
 
-where $\phi > 0$ (friends' studying is complementary to your own), and $\theta_i$ captures each student's observable characteristics (parental education, gender, race, neighborhood). The game is a potential game with $V(z) = \sum_i \theta_i z_i - \frac{1}{2}\|z\|^2 + \frac{\phi}{2} z^\top G z$. Empirically, a one-standard-deviation increase in centrality predicts a **7% standard deviation increase** in school performance.
+### Evolutionary dynamics and frequency-dependent selection
 
-Now: this particular game has a *unique* Nash equilibrium because Calvó-Armengol et al. restrict to networks where $\phi \lambda_{\max}(G) < 1$ (ensuring the potential is concave in the appropriate sense). But this uniqueness is a consequence of the specific parameterization: it holds when peer-effect complementarities are weak relative to own-effort concavity. As network density grows or $\phi$ increases, this condition fails — and the model develops multiple equilibria with different aggregate welfare levels. The question of which equilibrium a school planner should aim for, and whether it can be reached by tweaking $\theta_i$ via interventions (tutoring, class composition), becomes exactly problem (P).
-
-### Evolutionary biology and frequency-dependent selection
-
-In evolutionary game theory, $x \in \Delta_n$ is the frequency distribution over $n$ strategies in a large population. The replicator equation
+The formulation as $\max_{x \in \Delta_n} V(x)$ is most natural in evolutionary game theory, where $x \in \Delta_n$ represents the frequency distribution over $n$ strategies in a large population. The replicator equation
 
 $$\dot{x}_i = x_i\bigl(\pi_i(x) - \bar\pi(x)\bigr)$$
 
-describes evolution. When payoffs are linear in $x$ — which holds in many standard ecological models — the game has a quadratic potential $V(x) = x^\top A x + q^\top x$, where $A_{ij}$ is the payoff to strategy $i$ when meeting strategy $j$, and $q$ encodes baseline fitness independent of the population. The replicator dynamics are then the gradient flow of $V$ under the Shahshahani metric on $\Delta_n$.
+is the gradient flow of $V$ under the Shahshahani metric on $\Delta_n$ when payoffs are $\pi_i(x) = (Ax + q)_i$ — a standard assumption in many ecological models. The replicator dynamics thus climb $V$, converging to local maxima. Different initial conditions lead to different stable equilibria; the global maximum of $V$ is the highest-welfare equilibrium and the evolutionary state with highest mean population fitness.
 
-When $A$ is indefinite — which happens generically when strategies are neither uniformly cooperative nor uniformly competitive — the potential has multiple local maxima, each a stable equilibrium. The global maximum of $V$ corresponds to the evolutionary state with highest mean fitness: the equilibrium natural selection would reach if it could coordinate globally. Finding this state tells evolutionary biologists which population distributions are attractors in the strong sense, and whether observed populations are trapped at suboptimal local maxima.
+When $A$ is indefinite — which happens generically when strategies are neither uniformly cooperative nor uniformly competitive — the potential has multiple local maxima. The replicator dynamics can get trapped in a suboptimal one. Finding the global maximum tells us whether natural selection, if it could coordinate globally, would land somewhere substantially better than where it typically ends up.
 
 ---
 
 ## The Mathematical Structure
 
-All three settings above share the same mathematical core. Whether we are computing the welfare-maximizing R&D equilibrium, the best achievable academic outcome, or the fittest evolutionary stable state, the problem reduces to optimizing a quadratic function over a simplex. With $n$ strategies and population (or action-distribution) state $x \in \Delta_n = \{x \geq 0 : \mathbf{1}^\top x = 1\}$, the most natural class of potential games has a *quadratic* potential:
+All three settings above share the same mathematical core. Whether we are looking for the best Nash equilibrium in a finite game, reasoning about which network-game equilibrium a planner should target, or finding the fittest evolutionary stable state, the problem reduces to optimizing a quadratic function over a simplex. With $n$ strategies and state $x \in \Delta_n = \{x \geq 0 : \mathbf{1}^\top x = 1\}$, the most natural class of potential games has a *quadratic* potential:
 
 $$V(x) = x^\top A x + q^\top x$$
 
@@ -181,18 +177,17 @@ Computational tractability and dynamical stability coincide. Outside the certifi
 
 ## References
 
-**Empirical motivation**
+**Empirical motivation and network games**
 
 - Ballester, C., Calvó-Armengol, A. & Zenou, Y. (2006). Who's who in networks. Wanted: the key player. *Econometrica* 74(5), 1403–1417.
-- Calvó-Armengol, A., Patacchini, E. & Zenou, Y. (2009). Peer effects and social networks in education. *Review of Economic Studies* 76(4), 1239–1267.
-- König, M.D., Liu, X. & Zenou, Y. (2019). R&D networks: Theory, empirics, and policy implications. *Review of Economics and Statistics* 101(3), 476–491.
-- Leng, Y., Dong, X., Wu, J. & Pentland, A. (2020). Learning quadratic games on networks. *ICML*, PMLR 119.
+- Bramoullé, Y., Kranton, R. & D'Amours, M. (2014). Strategic interaction and networks. *American Economic Review* 104(3), 898–930.
+- Galeotti, A., Golub, B. & Goyal, S. (2020). Targeting interventions in networks. *Econometrica* 88(6), 2445–2471.
 
 **Theory**
 
-- Monderer, D. & Shapley, L.S. (1996). Potential games. *Games and Economic Behavior.*
+- Monderer, D. & Shapley, L.S. (1996). Potential games. *Games and Economic Behavior* 14(1), 124–143.
 - Sandholm, W.H. (2010). *Population Games and Evolutionary Dynamics.* MIT Press.
-- Conitzer, V. & Sandholm, T. (2003). Complexity results about Nash equilibria. *IJCAI.*
-- Bomze, I.M. (1998). On standard quadratic optimization problems. *J. Global Optim.*
-- Burer, S. & Ye, Y. (2020). Exactness of Parrilo's conic approximations. *Math. Oper. Res.*
-- Yakubovich, V.A. (1971). The S-procedure in nonlinear control theory. *Vestnik Leningrad Univ.*
+- Conitzer, V. & Sandholm, T. (2003). Complexity results about Nash equilibria. *IJCAI*, 765–771.
+- Bomze, I.M. (1998). On standard quadratic optimization problems. *Journal of Global Optimization* 13(4), 369–387.
+- Burer, S. & Ye, Y. (2020). Exactness of Parrilo's conic approximations for copositive programs. *Mathematics of Operations Research* 45(1), 265–290.
+- Yakubovich, V.A. (1971). The S-procedure in nonlinear control theory. *Vestnik Leningrad University* 1, 62–77.
