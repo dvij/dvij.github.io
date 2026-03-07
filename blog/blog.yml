@@ -1,0 +1,44 @@
+name: Build and Deploy Blog
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'blog/**'
+      - '.github/workflows/blog.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Quarto
+        uses: quarto-dev/quarto-actions/setup@v2
+
+      - name: Set up Python (for any executed notebooks)
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Python deps
+        run: |
+          pip install jupyter numpy matplotlib scipy
+
+      - name: Render blog
+        run: quarto render blog/
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs
+          keep_files: true   # preserves existing site files outside /blog

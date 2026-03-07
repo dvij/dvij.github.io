@@ -1,0 +1,88 @@
+---
+title: "The Intent Gap: Why AI-Generated Code Needs Specifications, Not Just Tests"
+description: "Vibe coding is here. The problem isn't that AI writes bad code — it's that we've lost the scaffolding that used to catch the gap between what we meant and what we got."
+date: 2026-03-06
+author: "Dj"
+categories: [AI, software-engineering, formal-methods]
+toc: true
+---
+
+There's a term making the rounds: *vibe coding*. Coined by Andrej Karpathy, it describes the new mode of AI-assisted development where you describe what you want in natural language, accept the generated code with minimal review, and "forget that the code even exists."
+
+It's a catchy label for something real. Tools like Claude Code, GitHub Copilot's coding agent, and Cursor are genuinely changing how software gets written. But they've also quietly removed something that used to matter: the moment when a human read the code and asked, *is this actually what I meant?*
+
+## The Problem Isn't Code Quality
+
+The naive worry about AI-generated code is that it'll be wrong in obvious ways — bugs, hallucinated APIs, logic errors. And that does happen. But the deeper problem is more subtle.
+
+LLM-generated code is *plausible by construction*. It compiles. It passes the tests you wrote. It looks like idiomatic Python or Rust or Go. The surface-level quality is often impressive.
+
+What it doesn't do is *know what you meant*.
+
+Consider a deceptively simple example: "given a list of integers, remove duplicates." There are at least two natural interpretations:
+
+1. Keep one copy of each element that appears more than once: `[1,2,3,2,4] → [1,2,3,4]`
+2. Remove *all* elements that appear more than once: `[1,2,3,2,4] → [1,3,4]`
+
+A typical LLM will produce interpretation 1 without hesitation — because it's statistically more common in training data. But if you wanted interpretation 2, you now have a bug that looks like working code. It'll pass most tests you'd think to write. It might ship.
+
+This is the **intent gap**: the semantic distance between what you meant and what the program does.
+
+## Why Vibe Coding Amplifies It
+
+The intent gap isn't new. It's always existed in software engineering. What AI changes is the *scale* and the *invisibility*.
+
+Traditional development had natural checkpoints: you wrote the code, you re-read it, a reviewer read it, you debugged it step by step. Each of these was an opportunity to notice that the implementation diverged from the intent.
+
+In the vibe coding workflow, those checkpoints are being bypassed. You type a prompt, accept a diff, and move on. The ratio of code produced to code carefully examined is growing rapidly. AI writes faster than humans can review.
+
+And crucially: AI-generated bugs are harder to spot than hand-written ones, precisely because the code *looks* right. A human programmer's mistake often has a "this looks weird" quality. AI-generated misinterpretations are fluent and stylistically impeccable.
+
+## Specifications as the Answer
+
+The standard response to software bugs is testing. Write more tests, better tests, edge case tests. This is good advice but it's not sufficient here.
+
+Tests check specific inputs. They can't tell you whether the *intent* was correctly captured — they can only tell you whether the code matches the tests. And your tests were probably written based on the same informal prompt that generated the code. They'll share the same blind spots.
+
+What's needed is something more fundamental: **formal specifications**. A specification describes *what* the code should do in a way that can be mechanically checked — not just against the examples you thought to include, but against the space of all possible behaviors.
+
+For the "remove duplicates" example, a formal postcondition makes the intent unambiguous:
+
+```python
+# Intent: remove ALL elements that appear more than once
+assert all(lst.count(x) == 1 for x in result)
+assert all(x in result for x in lst if lst.count(x) == 1)
+```
+
+This is just a Python assertion, but it pins down the semantics precisely. Any implementation that satisfies it is correct; any that doesn't is wrong. You can check it dynamically, use it for fuzz testing, or feed it to a verifier.
+
+## A Spectrum of Formalism
+
+One reason specifications have historically been unpopular is the perception that they're all-or-nothing — either you do full formal verification (expensive, requires expertise) or you write tests (cheap, familiar).
+
+But there's actually a spectrum:
+
+- **Targeted assertions** at points of likely ambiguity — cheap, immediately useful, language-agnostic
+- **Preconditions and postconditions** on functions — more systematic, can be checked at runtime
+- **Full functional specs** in languages like Dafny or Verus — machine-checkable proofs of correctness
+- **Domain-specific languages** from which correct code is *synthesized* — the spec is the program
+
+The key insight is that even partial specifications at the cheap end of the spectrum give substantial value. You don't need to prove your whole codebase correct; you just need to pin down the parts where AI is most likely to misinterpret your intent.
+
+Recent work from Microsoft Research (Lahiri et al., FSE 2024) shows that LLM-generated postconditions catch real bugs in production Java codebases — including bugs missed by classical invariant detectors. The same LLMs that create the intent gap can help close it, if you use them to generate specifications rather than just code.
+
+## The Shift That's Needed
+
+The vibe coding moment has changed the role of the human in software development. We've moved from *author* to *supervisor* to — in the most extreme cases — passive *consumer* of AI-generated code.
+
+This isn't inherently bad. It's a genuine productivity revolution. But it means the informal review process that used to catch intent gaps is weakened or gone.
+
+The replacement has to be more systematic. Specifications — even lightweight ones — are the scalable mechanism for ensuring that AI-generated code does what you actually meant. Not because formal methods are suddenly easy, but because the alternative (trusting that the LLM guessed correctly) is getting less viable as the stakes get higher.
+
+The question isn't whether we need specifications. It's how to make writing them cheap enough that people actually do it.
+
+That's an open problem worth working on.
+
+---
+
+*Further reading: Lahiri et al., "Can Large Language Models Transform Natural Language Intent into Formal Method Postconditions?", FSE 2024. The RiSE group at Microsoft Research has a [nice blog post](https://risemsr.github.io/blog/2026-03-05-shuvendu-intent-formalization/) covering the broader research agenda.*

@@ -1,0 +1,45 @@
+project:
+  type: website
+  output-dir: ../docs/blog
+
+website:
+  title: "Dj's Blog"
+  description: "Writing on optimization, AI, and adjacent ideas."
+  site-url: https://dvij.github.io
+  favicon: _assets/favicon.ico
+  navbar:
+    left:
+      - text: "Home"
+        href: https://dvij.github.io
+      - text: "Blog"
+        href: index.qmd
+    right:
+      - icon: github
+        href: https://github.com/dvij
+      - icon: rss
+        href: index.xml
+
+  page-footer:
+    center: "© 2026 Dj · Built with [Quarto](https://quarto.org)"
+
+format:
+  html:
+    theme:
+      light: [flatly, _assets/custom.scss]
+      dark: [darkly, _assets/custom.scss]
+    highlight-style: github
+    code-copy: true
+    code-overflow: wrap
+    toc: true
+    toc-depth: 3
+    toc-title: "On this page"
+    number-sections: false
+    html-math-method: katex
+    fig-align: center
+    smooth-scroll: true
+    link-external-newwindow: true
+
+execute:
+  freeze: auto
+  echo: true
+  warning: false

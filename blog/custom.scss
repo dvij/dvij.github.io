@@ -1,0 +1,126 @@
+/*-- scss:defaults --*/
+$font-family-sans-serif: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+$font-family-monospace: "JetBrains Mono", "Fira Code", "Cascadia Code", monospace;
+$headings-font-family: "Inter", sans-serif;
+$font-size-base: 1.05rem;
+$line-height-base: 1.75;
+
+// Brand colors — clean slate with warm accent
+$primary: #2563eb;       // blue-600
+$link-color: #2563eb;
+$link-hover-color: #1d4ed8;
+
+/*-- scss:rules --*/
+
+// Import Inter font from Google
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+// --- General prose ---
+.content p {
+  margin-bottom: 1.2rem;
+}
+
+// Tighten up post listing cards
+.quarto-post {
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+  padding-bottom: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+// --- Math display ---
+// Give display math a little breathing room
+.math.display {
+  overflow-x: auto;
+  padding: 0.5rem 0;
+  margin: 1.2rem 0;
+}
+
+// --- Code blocks ---
+pre.sourceCode {
+  border-radius: 6px;
+  border: 1px solid rgba(0,0,0,0.08);
+  font-size: 0.88rem;
+}
+
+// Inline code
+code:not(.sourceCode) {
+  background: rgba(99, 102, 241, 0.08);
+  border-radius: 3px;
+  padding: 0.15em 0.35em;
+  font-size: 0.88em;
+  color: #4f46e5;
+}
+
+// --- TOC ---
+#TOC {
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+#TOC a {
+  color: #64748b;
+  text-decoration: none;
+}
+
+#TOC a:hover {
+  color: $primary;
+}
+
+// --- Tags/categories ---
+.quarto-category {
+  background: rgba(37, 99, 235, 0.08);
+  color: #2563eb;
+  border-radius: 999px;
+  padding: 0.15rem 0.7rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+}
+
+.quarto-category:hover {
+  background: rgba(37, 99, 235, 0.16);
+}
+
+// --- Post title ---
+h1.title {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+// --- Dark mode tweaks ---
+.dark {
+  code:not(.sourceCode) {
+    background: rgba(99, 102, 241, 0.15);
+    color: #a5b4fc;
+  }
+
+  pre.sourceCode {
+    border-color: rgba(255,255,255,0.08);
+  }
+
+  .quarto-post {
+    border-bottom-color: rgba(255,255,255,0.08);
+  }
+}
+
+// --- Callout tweaks ---
+.callout {
+  border-radius: 6px;
+}
+
+// --- Figure captions ---
+.figure-caption {
+  font-size: 0.85rem;
+  color: #64748b;
+  text-align: center;
+  margin-top: 0.4rem;
+}
+
+// --- Responsive math on mobile ---
+@media (max-width: 768px) {
+  .math.display {
+    font-size: 0.9rem;
+  }
+}

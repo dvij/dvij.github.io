@@ -1,0 +1,178 @@
+---
+title: "A Map of Tractable QCQPs"
+description: "Characterizing when SDP relaxations of quadratically constrained quadratic programs are exact — a tour through the S-lemma, chordal sparsity, sign definiteness, and their interplay."
+date: 2026-02-23
+author: "Dj"
+categories: [optimization, theory, semidefinite-programming]
+image: thumbnail.png
+toc: true
+toc-depth: 3
+---
+
+Quadratically constrained quadratic programs (QCQPs) are NP-hard in general, yet a surprising number of practically important instances admit polynomial-time exact solutions via semidefinite programming (SDP) relaxation. The goal of this post is to build a map of the tractable territory — collecting the tightest known results and showing how the key conditions fit together.
+
+## Problem Setup
+
+A QCQP takes the form:
+
+$$
+\min_{x \in \mathbb{R}^n} \; x^\top A_0 x + 2b_0^\top x + c_0 \quad \text{s.t.} \quad x^\top A_i x + 2b_i^\top x + c_i \leq 0, \quad i = 1, \ldots, m
+$$
+
+where $A_i \in \mathbb{S}^n$, $b_i \in \mathbb{R}^n$, $c_i \in \mathbb{R}$. When all $A_i \succeq 0$ this is a convex QP; the interesting regime is when some $A_i$ are indefinite.
+
+### The Canonical SDP Relaxation
+
+Introduce $X = xx^\top$ and relax the rank-1 constraint to $X \succeq 0$:
+
+$$
+\min \; \langle \hat{A}_0, \hat{X} \rangle \quad \text{s.t.} \quad \langle \hat{A}_i, \hat{X} \rangle \leq 0, \quad \hat{X}_{00} = 1, \quad \hat{X} \succeq 0
+$$
+
+where $\hat{A}_i = \begin{pmatrix} c_i & b_i^\top \\ b_i & A_i \end{pmatrix}$ is the $(n+1) \times (n+1)$ lifted matrix.
+
+**The SDP relaxation is *exact*** when the relaxed optimal value equals the QCQP optimal value, and a rank-1 optimal $\hat{X}$ can be recovered (equivalently, zero duality gap plus rank-1 recoverability).
+
+The central question: *when does this happen?*
+
+---
+
+## The Three Pillars of Tractability
+
+The known tractable cases rest on three structural conditions that can be combined.
+
+### Pillar 1: Few Constraints — The S-Lemma
+
+The most fundamental result is the **S-lemma** (Yakubovich 1971).
+
+::: {.callout-note}
+**Theorem (S-Lemma).** Let $f, g$ be quadratics with $\exists \bar{x}: g(\bar{x}) < 0$. Then
+$$f(x) \geq 0 \;\forall x: g(x) \leq 0 \iff \exists \lambda \geq 0:\; f(x) - \lambda g(x) \geq 0 \;\forall x.$$
+:::
+
+The consequence for QCQPs: **when $m = 1$, the SDP relaxation is always exact** (under Slater's condition). The dual multiplier $\lambda$ certifies zero duality gap, and rank-1 recovery follows from the rank characterization of SDP optima.
+
+This fails for $m = 2$ in general — counterexamples exist already in $\mathbb{R}^2$.
+
+**Extensions:**
+
+- *Equality constraint*: the S-lemma holds with $\lambda$ unrestricted, covering the **trust-region subproblem** $\min\{x^\top A_0 x + 2b_0^\top x : \|x\|^2 \leq 1\}$. This is the workhorse of trust-region optimization methods and is solvable in near-linear time.
+- *CDT (two-ball) problem*: for $m = 2$ ball constraints, exactness holds under mild nondegeneracy (Ye & Zhang 2003).
+- *Complex domain*: over $\mathbb{C}^n$, the SDP relaxation is exact for $m \leq 2$ with **no** additional assumptions, and for $m \leq 3$ rank-1 constraints (So 2010). The complex case is uniformly easier.
+
+**The Barvinok-Pataki bound** gives intuition for why few constraints help: a rank-$r$ solution to the lifted SDP exists whenever $r(r+1)/2 \leq m+1$, so small $m$ forces low-rank solutions and makes rank-1 recovery feasible.
+
+---
+
+### Pillar 2: Sign Definiteness of the Lagrangian
+
+The deepest unifying condition is **joint sign definiteness**.
+
+**Definition.** The QCQP is *jointly definite* if $\exists \lambda \geq 0$ such that $A_0 + \sum_i \lambda_i A_i \succeq 0$.
+
+In words: the dual multipliers can *convexify* the Lagrangian. This is exactly the condition that makes the saddle-point structure of the Lagrangian well-behaved.
+
+::: {.callout-important}
+**Theorem (Burer 2012; sharpened by Burer & Ye 2020).** If the Lagrangian Hessian at the optimum has **at most one negative eigenvalue**, the SDP relaxation is exact.
+:::
+
+This subsumes several classical results:
+
+| Condition | Why it implies $\leq 1$ neg. eigenvalue |
+|---|---|
+| Convex QCQP ($A_i \succeq 0$) | Lagrangian is PSD, zero negative eigenvalues |
+| TRS / single constraint | S-lemma gives $\lambda^*$ with PSD Lagrangian |
+| Joint definiteness | By definition |
+| $A_i$ simultaneously diagonalizable (Huang & Zhang 2007) | Diagonalize and apply 1D argument |
+
+The "at most one negative eigenvalue" condition is tight — problems with two or more negative eigenvalues can be NP-hard.
+
+---
+
+### Pillar 3: Chordal Sparsity
+
+Chordal structure is the *decomposition engine* that makes large-scale tractability possible.
+
+**Setup.** Associate a graph $G = (V, E)$ to the QCQP where edges correspond to nonzero off-diagonal blocks of the $A_i$. If $G$ is **chordal** (every cycle of length $\geq 4$ has a chord), its maximal cliques $\{C_1, \ldots, C_k\}$ form a perfect elimination ordering.
+
+::: {.callout-note}
+**Theorem (Kim & Kojima 2003; Vandenberghe & Andersen 2015).** If $G$ is chordal, the global SDP decomposes into clique-local SDPs:
+$$X \succeq 0 \iff X_{C_\ell} \succeq 0 \;\forall \ell, \quad \text{(plus consistency constraints)}$$
+:::
+
+**Why this matters:** if each clique subproblem is tractable (via Pillars 1 or 2), the whole problem is tractable — with complexity polynomial in $n$ for fixed treewidth $\omega$.
+
+This is the standard approach in power systems (ACOPF), sensor network localization, and polynomial optimization via the Lasserre/SOS hierarchy. Sparse moment matrices decompose along the chordal structure of the variable interaction graph.
+
+---
+
+## The Unified Picture
+
+```
+                      TRACTABLE QCQPs
+                            │
+         ┌──────────────────┼──────────────────┐
+         │                  │                   │
+   CONVEX QCQP        STRUCTURAL          DOMAIN-SPECIFIC
+   (all Aᵢ ≽ 0)      CONDITIONS               │
+                            │              ┌────┴─────┐
+                    ┌───────┼───────┐      │          │
+                    │       │       │    BOOL(GW)   COMPLEX
+               S-LEMMA  CHORDAL  SIGN      │       (m≤3 exact)
+               (m=1,2)  SPARSITY  DEFNT  0.878
+                    │       │       │    approx
+                    └───────┴───────┘
+                            │
+                   COMBINED CONDITIONS
+              (chordal + clique-local tractability)
+```
+
+The real power is in *combinations*: a problem that is neither globally few-constrained nor globally sparse may still be tractable if it has favorable local structure within each chordal clique.
+
+---
+
+## Summary Table
+
+| Condition | $m$ | Key requirement | Reference |
+|---|:---:|---|---|
+| Convex QCQP | any | $A_i \succeq 0 \;\forall i$ | Classical |
+| S-Lemma | 1 | Strict feasibility | Yakubovich 1971 |
+| TRS | 1 (ball) | $\|x\|^2 \leq 1$ | Stern & Wolkowicz 1995 |
+| Two-sided TRS / CDT | 2 (balls) | Mild nondegeneracy | Ye & Zhang 2003 |
+| Simultaneously diagonalizable | 2 | $A_1, A_2$ sim. diag. | Huang & Zhang 2007 |
+| Joint definiteness | any | $\exists\lambda \geq 0: A_0 + \sum\lambda_i A_i \succeq 0$ | Burer 2012 |
+| $\leq 1$ neg. eigenvalue | any | Lagrangian Hessian condition | Burer & Ye 2020 |
+| Chordal + local tractable | any | Treewidth $\omega$ bounded | Kim & Kojima 2003 |
+| Complex, rank-1 constraints | $\leq 3$ | Over $\mathbb{C}^n$ | So 2010 |
+| Boolean (Max-Cut) | $n$ | $x_i^2 = x_i$ | Goemans & Williamson 1995 |
+
+---
+
+## Open Directions
+
+A few places where the map has genuine gaps:
+
+**The real two-constraint case.** The CDT (two-ball) problem is tractable, but the general 2-constraint non-convex QCQP over $\mathbb{R}^n$ is not fully resolved — unlike the complex case where $m \leq 2$ always works.
+
+**Beyond chordal.** Graphs with bounded genus or excluded minors have partial results but no clean tractability boundary.
+
+**Aggregation + sparsity.** Combining S-lemma style reasoning (few constraints) with chordal decomposition (few variables per clique) is the most powerful known paradigm, but the interaction between the two is not fully characterized.
+
+**SOS hierarchy convergence rates.** Lasserre/moment hierarchies converge for compact feasible sets, but the level at which exactness is achieved for a given QCQP depends on algebraic degree in ways that aren't fully understood.
+
+**Copositive relaxations.** Every non-convex QCQP over the nonnegative orthant has an exact copositive reformulation, but the gap between the tractable doubly-nonnegative (DNN) inner approximation and the true copositive cone is an active area.
+
+---
+
+## References
+
+- Yakubovich, V.A. (1971). The S-procedure in nonlinear control theory. *Vestnik Leningrad Univ.*
+- Stern, R. & Wolkowicz, H. (1995). Indefinite trust region subproblems and nonsymmetric eigenvalue perturbations. *SIAM J. Optim.*
+- Goemans, M. & Williamson, D. (1995). Improved approximation algorithms for maximum cut. *JACM.*
+- Ye, Y. & Zhang, S. (2003). New results on quadratic minimization. *SIAM J. Optim.*
+- Kim, S. & Kojima, M. (2003). Exact solutions of some nonconvex QCQPs via SOS relaxations. *Comput. Optim. Appl.*
+- Huang, Y. & Zhang, S. (2007). Complex matrix decomposition and quadratic programming. *Math. Oper. Res.*
+- So, A.M.-C. (2010). Moment inequalities for sums of random matrices. *Math. Program.*
+- Burer, S. (2012). A gentle, geometric introduction to copositive optimization. *Math. Program.*
+- Burer, S. & Ye, Y. (2020). Exactness of Parrilo's conic approximations. *Math. Oper. Res.*
+- Vandenberghe, L. & Andersen, M.S. (2015). Chordal graphs and semidefinite optimization. *Found. Trends Optim.*
