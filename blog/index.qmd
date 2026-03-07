@@ -138,6 +138,51 @@ This gives the tractable class a clean interpretation: **games where identity do
 
 **The tractable class is convex in $(A, q)$ space** — it's the projection of an SDP feasible set. This means it can be tested efficiently, and it degrades gracefully: as $\|q\|$ grows relative to $\|A\|$, more and more games become certifiable.
 
+### Worked example: population routing game
+
+To make the machinery concrete, here is a small instance where every number has a physical meaning, the interaction matrix is genuinely indefinite, and the reparameterization framework certifies exact solvability.
+
+**Setup.** A unit mass of commuters splits across $n = 3$ routes each morning:
+
+- **Route 1 — City-center highway.** Short and direct, but funnels through downtown bottlenecks, so highly congestion-sensitive.
+- **Route 2 — Wide bypass.** Longer and slightly slower in free flow, but a multi-lane ring road that absorbs traffic well.
+- **Route 3 — Secondary road.** Moderate distance and moderate congestion sensitivity; shares a merge point with both other routes.
+
+The population state $x \in \Delta_3$ is the fraction of commuters on each route. The potential is $V(x) = \tfrac{1}{2}\, x^\top Q\, x + q^\top x$, where $Q$ encodes pairwise congestion interactions and $q$ encodes intrinsic route quality (free-flow travel time, tolls, road condition):
+
+$$
+Q = \begin{pmatrix} 2 & -1 & 0.5 \\ -1 & 0.5 & 1 \\ 0.5 & 1 & 1 \end{pmatrix}, \qquad q = \begin{pmatrix} 4.5 \\ 4 \\ 1 \end{pmatrix}.
+$$
+
+**What each entry means.**
+
+- *Diagonal (self-congestion).* $Q_{11} = 2 > Q_{33} = 1 > Q_{22} = 0.5$: the city-center highway is most congestion-sensitive (narrow bottleneck), the bypass is least (wide, multi-lane), and the secondary road is in between.
+- *$Q_{12} = -1$ (complementarity).* Splitting traffic between the highway and the bypass *reduces* total delay — they are parallel corridors that share no bottleneck. The negative entry captures this relief effect.
+- *$Q_{13} = 0.5$, $Q_{23} = 1$ (cross-congestion).* The secondary road shares a merge point with both alternatives, so adding traffic to route 3 worsens routes 1 and 2. The bypass–secondary interaction ($Q_{23} = 1$) is stronger because they merge closer to the bypass's entry ramp.
+- *Intrinsic quality $q$.* Route 1 has the highest standalone payoff ($q_1 = 4.5$): in free flow it is the fastest. The bypass is close behind ($q_2 = 4$). The secondary road is much less attractive on its own ($q_3 = 1$): longer, with worse road surface.
+
+**The matrix is indefinite.** $\det(Q) = -3.125 < 0$, so $Q$ has both positive and negative eigenvalues. Maximizing $V$ over $\Delta_3$ is a nonconvex QP — the welfare-maximizing traffic split cannot be found by standard convex optimization.
+
+**Coordinate reduction.** Eliminate route 3 via $x_3 = 1 - x_1 - x_2$ to get a reduced problem on $\{y \geq 0,\, \mathbf{1}^\top y \leq 1\} \subset \mathbb{R}^2$:
+
+$$
+\tilde{Q} = \begin{pmatrix} 2 & -1.5 \\ -1.5 & -0.5 \end{pmatrix}, \qquad \tilde{q} = \begin{pmatrix} 3 \\ 3 \end{pmatrix}.
+$$
+
+The reduced matrix $\tilde{Q}$ is still indefinite ($\det \tilde{Q} = -3.25$), confirming the nonconvexity is genuine.
+
+**Certification.** We need a curvature parameter $\kappa \geq 0$ such that $M(x) = \tilde{Q} + \kappa \cdot \text{diag}(\tilde{Q}x + \tilde{q}) \preceq 0$ everywhere on the reduced simplex. Since $M(x)$ is affine in $x$ and $\lambda_{\min}$ is concave, it suffices to check the three vertices. At $\kappa = 0.63$:
+
+| Vertex $v$ | Gradient $g(v) = \tilde{Q}v + \tilde{q}$ | $\det M(v)$ | $\text{tr}\, M(v)$ |
+|:---:|:---:|:---:|:---:|
+| $(1,0)$ | $(5,\; 1.5)$ | $0.04$ | $5.59$ |
+| $(0,1)$ | $(1.5,\; 2.5)$ | $0.92$ | $4.02$ |
+| $(0,0)$ | $(3,\; 3)$ | $3.16$ | $5.28$ |
+
+Every $2 \times 2$ matrix $M(v)$ has positive determinant and positive trace, so both eigenvalues are positive — $M(v) \succ 0$ at every vertex. By concavity, $M(x) \succ 0$ on the entire simplex.
+
+**Result.** Despite the indefinite congestion matrix, the welfare-maximizing traffic split — the routing equilibrium that minimizes total system delay — is computable in polynomial time. After reparameterization with $\kappa = 0.63$ (concretely: $y_i = e^{0.63\, z_i}$), the problem becomes concave and any projected gradient method finds the global optimum. The tractability is invisible to methods that look at $Q$ alone; it emerges from the joint structure of $(Q, q)$ — specifically, from the fact that the routes' intrinsic quality differences ($q$) dominate the cross-route congestion effects ($\tilde{Q}_{ij}$).
+
 ### Numerical evidence
 
 On 500 random indefinite quadratic potential games ($n = 4$, $q \sim 3\mathcal{N}(0,I)$):
