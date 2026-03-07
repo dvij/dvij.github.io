@@ -342,9 +342,9 @@ window.Quarto = {
   <ul>
   <li><a href="#motivating-problems" id="toc-motivating-problems" class="nav-link active" data-scroll-target="#motivating-problems">Motivating Problems</a>
   <ul class="collapse">
-  <li><a href="#traffic-routing-and-congestion" id="toc-traffic-routing-and-congestion" class="nav-link" data-scroll-target="#traffic-routing-and-congestion">Traffic routing and congestion</a></li>
-  <li><a href="#evolutionary-biology-and-population-games" id="toc-evolutionary-biology-and-population-games" class="nav-link" data-scroll-target="#evolutionary-biology-and-population-games">Evolutionary biology and population games</a></li>
-  <li><a href="#market-design-and-mechanism-design" id="toc-market-design-and-mechanism-design" class="nav-link" data-scroll-target="#market-design-and-mechanism-design">Market design and mechanism design</a></li>
+  <li><a href="#rd-collaboration-networks" id="toc-rd-collaboration-networks" class="nav-link" data-scroll-target="#rd-collaboration-networks">R&amp;D collaboration networks</a></li>
+  <li><a href="#education-and-peer-effects" id="toc-education-and-peer-effects" class="nav-link" data-scroll-target="#education-and-peer-effects">Education and peer effects</a></li>
+  <li><a href="#evolutionary-biology-and-frequency-dependent-selection" id="toc-evolutionary-biology-and-frequency-dependent-selection" class="nav-link" data-scroll-target="#evolutionary-biology-and-frequency-dependent-selection">Evolutionary biology and frequency-dependent selection</a></li>
   </ul></li>
   <li><a href="#the-mathematical-structure" id="toc-the-mathematical-structure" class="nav-link" data-scroll-target="#the-mathematical-structure">The Mathematical Structure</a></li>
   <li><a href="#why-this-is-hard-in-general" id="toc-why-this-is-hard-in-general" class="nav-link" data-scroll-target="#why-this-is-hard-in-general">Why This Is Hard in General</a></li>
@@ -413,28 +413,35 @@ window.Quarto = {
 
 <section id="motivating-problems" class="level2">
 <h2 class="anchored" data-anchor-id="motivating-problems">Motivating Problems</h2>
-<section id="traffic-routing-and-congestion" class="level3">
-<h3 class="anchored" data-anchor-id="traffic-routing-and-congestion">Traffic routing and congestion</h3>
-<p>In Wardrop’s model of traffic equilibrium, drivers independently choose routes to minimize their own travel time. Each road’s travel time increases with the number of users on it. The resulting equilibria — where no driver can unilaterally switch routes to save time — are Nash equilibria of a congestion game.</p>
-<p>Congestion games are the canonical example of a <strong>potential game</strong>: a game where all players’ incentives are captured by a single function <span class="math inline">V</span>, so that any player’s gain from deviating equals the change in <span class="math inline">V</span>. For traffic, the potential is the sum of individual edge costs integrated over usage. The welfare-maximizing Nash equilibrium minimizes total system travel time — this is Wardrop’s <em>system optimum</em>, and it generally differs from the equilibrium that selfish drivers reach (the gap is the <em>price of anarchy</em>).</p>
-<p>Finding the system optimum matters for traffic engineers who want to set tolls or signal timings to nudge selfish behavior toward it. It also matters for understanding how far the selfish equilibrium is from the best achievable outcome.</p>
+<p>The central question of this post — <em>which Nash equilibrium is welfare-maximizing, and can we find it?</em> — is not merely abstract. It arises concretely in settings that have been empirically studied and calibrated on real data. Here are three.</p>
+<section id="rd-collaboration-networks" class="level3">
+<h3 class="anchored" data-anchor-id="rd-collaboration-networks">R&amp;D collaboration networks</h3>
+<p>Firms in technology-intensive industries simultaneously choose how much to invest in R&amp;D and how much to produce. When firms have R&amp;D collaboration agreements, spillovers lower each collaborator’s production costs — but the same firms may also compete in the same product market, creating a tension between knowledge sharing and market rivalry.</p>
+<p>König, Liu &amp; Zenou (2019) develop and structurally estimate exactly this model on a panel of R&amp;D alliances and company reports from pharmaceutical, chemical, and computer industries. The per-firm payoff takes the form</p>
+<p><span class="math display">\pi_i = (\alpha_i - c_i)q_i - q_i^2 - \rho \sum_{j \sim i} q_i q_j + q_i e_i + \phi \sum_{j \sim_R i} q_j e_i - \tfrac{1}{2}e_i^2</span></p>
+<p>where <span class="math inline">e_i</span> is R&amp;D effort, <span class="math inline">\phi \geq 0</span> captures collaboration spillovers, <span class="math inline">\rho \in [0,1)</span> captures product substitutability, and the two networks — R&amp;D partnerships and product-market competition — are distinct. In equilibrium, <span class="math inline">e_i^* = q_i^* \propto</span> the firm’s Katz-Bonacich centrality in an effective network whose adjacency is <span class="math inline">\phi A - \rho B</span> — the spillover network minus the scaled competition matrix. When both <span class="math inline">\phi</span> and <span class="math inline">\rho</span> are nonzero, this effective interaction matrix can be <strong>indefinite</strong>: some firms benefit from neighbors’ effort (through spillovers) while others are hurt (through competition).</p>
+<p>The welfare stakes are substantial. König et al.&nbsp;find that <em>targeted</em> subsidies — calibrated to each firm’s network position — improve total welfare by up to <strong>80%</strong> over the laissez-faire equilibrium, while uniform subsidies improve it by only <strong>4%</strong>. The optimal targeting is not determined by market share, patent count, or raw centrality alone; it requires knowing which equilibrium firms will coordinate on and which policy can shift that equilibrium toward the social optimum. This is precisely the computation we need to perform.</p>
 </section>
-<section id="evolutionary-biology-and-population-games" class="level3">
-<h3 class="anchored" data-anchor-id="evolutionary-biology-and-population-games">Evolutionary biology and population games</h3>
-<p>In evolutionary game theory, the state <span class="math inline">x \in \Delta_n</span> represents the frequency distribution over <span class="math inline">n</span> strategies in a large population. Payoffs are frequency-dependent: the fitness of strategy <span class="math inline">i</span> is <span class="math inline">\pi_i(x)</span>, and strategies with above-average fitness grow. The replicator equation</p>
-<p><span class="math display">\dot{x}_i = x_i(\pi_i(x) - \bar\pi(x))</span></p>
-<p>describes how the population evolves. In a potential game with <span class="math inline">\pi_i(x) = \partial V / \partial x_i</span>, this is the gradient flow of <span class="math inline">V</span> under the Shahshahani metric on the simplex — the population is climbing the potential landscape.</p>
-<p>When the potential has multiple local maxima, different initial conditions lead to different stable equilibria. The global maximum of <span class="math inline">V</span> is the <em>most fit</em> equilibrium — the one that natural selection would reach if it could coordinate globally. Finding it tells biologists which strategy distributions are evolutionary attractors in the strong sense, and whether the population is likely to be trapped at a suboptimal local equilibrium.</p>
+<section id="education-and-peer-effects" class="level3">
+<h3 class="anchored" data-anchor-id="education-and-peer-effects">Education and peer effects</h3>
+<p>Calvó-Armengol, Patacchini &amp; Zenou (2009) study academic achievement among US adolescents using the Add Health dataset: 11,964 students across 199 friendship networks. The key empirical finding is that a student’s academic effort at Nash equilibrium is proportional to their Katz-Bonacich centrality in the friendship network — a measure that counts all direct and indirect paths to the student, weighted by how far they are from her.</p>
+<p>The underlying utility is linear-quadratic:</p>
+<p><span class="math display">u_i = \theta_i z_i - \tfrac{1}{2}z_i^2 + \phi \sum_{j} g_{ij} z_i z_j</span></p>
+<p>where <span class="math inline">\phi &gt; 0</span> (friends’ studying is complementary to your own), and <span class="math inline">\theta_i</span> captures each student’s observable characteristics (parental education, gender, race, neighborhood). The game is a potential game with <span class="math inline">V(z) = \sum_i \theta_i z_i - \frac{1}{2}\|z\|^2 + \frac{\phi}{2} z^\top G z</span>. Empirically, a one-standard-deviation increase in centrality predicts a <strong>7% standard deviation increase</strong> in school performance.</p>
+<p>Now: this particular game has a <em>unique</em> Nash equilibrium because Calvó-Armengol et al.&nbsp;restrict to networks where <span class="math inline">\phi \lambda_{\max}(G) &lt; 1</span> (ensuring the potential is concave in the appropriate sense). But this uniqueness is a consequence of the specific parameterization: it holds when peer-effect complementarities are weak relative to own-effort concavity. As network density grows or <span class="math inline">\phi</span> increases, this condition fails — and the model develops multiple equilibria with different aggregate welfare levels. The question of which equilibrium a school planner should aim for, and whether it can be reached by tweaking <span class="math inline">\theta_i</span> via interventions (tutoring, class composition), becomes exactly problem (P).</p>
 </section>
-<section id="market-design-and-mechanism-design" class="level3">
-<h3 class="anchored" data-anchor-id="market-design-and-mechanism-design">Market design and mechanism design</h3>
-<p>In many economic models, agents choose actions from a finite set and their payoffs depend on the aggregate action distribution. When the game has a potential, the Nash equilibria are exactly the local maxima of <span class="math inline">V</span> over the simplex. A mechanism designer who can influence payoffs — through taxes, subsidies, or information — wants to know the <em>best achievable</em> Nash equilibrium to target. This requires finding the global maximum of <span class="math inline">V</span>, not just any local one.</p>
+<section id="evolutionary-biology-and-frequency-dependent-selection" class="level3">
+<h3 class="anchored" data-anchor-id="evolutionary-biology-and-frequency-dependent-selection">Evolutionary biology and frequency-dependent selection</h3>
+<p>In evolutionary game theory, <span class="math inline">x \in \Delta_n</span> is the frequency distribution over <span class="math inline">n</span> strategies in a large population. The replicator equation</p>
+<p><span class="math display">\dot{x}_i = x_i\bigl(\pi_i(x) - \bar\pi(x)\bigr)</span></p>
+<p>describes evolution. When payoffs are linear in <span class="math inline">x</span> — which holds in many standard ecological models — the game has a quadratic potential <span class="math inline">V(x) = x^\top A x + q^\top x</span>, where <span class="math inline">A_{ij}</span> is the payoff to strategy <span class="math inline">i</span> when meeting strategy <span class="math inline">j</span>, and <span class="math inline">q</span> encodes baseline fitness independent of the population. The replicator dynamics are then the gradient flow of <span class="math inline">V</span> under the Shahshahani metric on <span class="math inline">\Delta_n</span>.</p>
+<p>When <span class="math inline">A</span> is indefinite — which happens generically when strategies are neither uniformly cooperative nor uniformly competitive — the potential has multiple local maxima, each a stable equilibrium. The global maximum of <span class="math inline">V</span> corresponds to the evolutionary state with highest mean fitness: the equilibrium natural selection would reach if it could coordinate globally. Finding this state tells evolutionary biologists which population distributions are attractors in the strong sense, and whether observed populations are trapped at suboptimal local maxima.</p>
 <hr>
 </section>
 </section>
 <section id="the-mathematical-structure" class="level2">
 <h2 class="anchored" data-anchor-id="the-mathematical-structure">The Mathematical Structure</h2>
-<p>All three problems above share the same mathematical core. With <span class="math inline">n</span> strategies and population state <span class="math inline">x \in \Delta_n = \{x \geq 0 : \mathbf{1}^\top x = 1\}</span>, the most natural class of potential games has a <em>quadratic</em> potential:</p>
+<p>All three settings above share the same mathematical core. Whether we are computing the welfare-maximizing R&amp;D equilibrium, the best achievable academic outcome, or the fittest evolutionary stable state, the problem reduces to optimizing a quadratic function over a simplex. With <span class="math inline">n</span> strategies and population (or action-distribution) state <span class="math inline">x \in \Delta_n = \{x \geq 0 : \mathbf{1}^\top x = 1\}</span>, the most natural class of potential games has a <em>quadratic</em> potential:</p>
 <p><span class="math display">V(x) = x^\top A x + q^\top x</span></p>
 <p>Here <span class="math inline">A_{ij}</span> captures the interaction between strategies <span class="math inline">i</span> and <span class="math inline">j</span> — how much the fitness of strategy <span class="math inline">i</span> depends on the frequency of <span class="math inline">j</span> — and <span class="math inline">q_i</span> is the <em>intrinsic</em> payoff to strategy <span class="math inline">i</span>, independent of the population state. The gradient <span class="math inline">\nabla_i V(x) = 2(Ax)_i + q_i</span> is the marginal payoff to strategy <span class="math inline">i</span> at state <span class="math inline">x</span>.</p>
 <p><strong>Nash equilibria</strong> of this game are exactly the KKT points of <span class="math inline">\max_{x \in \Delta_n} V(x)</span>: states where all active strategies have equal (and maximal) payoff, and no inactive strategy has higher payoff. The <strong>welfare-maximizing Nash equilibrium</strong> is simply the global maximum of <span class="math inline">V</span> over <span class="math inline">\Delta_n</span>.</p>
@@ -565,6 +572,14 @@ Note
 </section>
 <section id="references" class="level2">
 <h2 class="anchored" data-anchor-id="references">References</h2>
+<p><strong>Empirical motivation</strong></p>
+<ul>
+<li>Ballester, C., Calvó-Armengol, A. &amp; Zenou, Y. (2006). Who’s who in networks. Wanted: the key player. <em>Econometrica</em> 74(5), 1403–1417.</li>
+<li>Calvó-Armengol, A., Patacchini, E. &amp; Zenou, Y. (2009). Peer effects and social networks in education. <em>Review of Economic Studies</em> 76(4), 1239–1267.</li>
+<li>König, M.D., Liu, X. &amp; Zenou, Y. (2019). R&amp;D networks: Theory, empirics, and policy implications. <em>Review of Economics and Statistics</em> 101(3), 476–491.</li>
+<li>Leng, Y., Dong, X., Wu, J. &amp; Pentland, A. (2020). Learning quadratic games on networks. <em>ICML</em>, PMLR 119.</li>
+</ul>
+<p><strong>Theory</strong></p>
 <ul>
 <li>Monderer, D. &amp; Shapley, L.S. (1996). Potential games. <em>Games and Economic Behavior.</em></li>
 <li>Sandholm, W.H. (2010). <em>Population Games and Evolutionary Dynamics.</em> MIT Press.</li>
