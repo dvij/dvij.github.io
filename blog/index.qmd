@@ -10,43 +10,41 @@ toc-depth: 3
 
 ## Motivating Problems
 
-The problem at the heart of this post is: given a potential game on the simplex, find the Nash equilibrium that maximizes aggregate welfare. Before diving into the math, it is worth understanding where this problem genuinely arises and why it matters.
+The problem at the heart of this post is: given a quadratic potential game on the simplex, find the Nash equilibrium that maximizes aggregate welfare. This is NP-hard in general (Conitzer & Sandholm, 2003). But before the main result, it is worth understanding where this problem genuinely arises, what the tractable class means in each setting, and why finding the global optimum matters.
 
-### Mixed-strategy equilibria in finite games
+The model is this: a population mixes over $n$ pure strategies, with state $x \in \Delta_n$. The payoff to strategy $i$ at state $x$ is $\pi_i(x) = (Ax + q)_i$, where $A_{ij}$ captures how the frequency of strategy $j$ affects the payoff to $i$, and $q_i$ is the **intrinsic payoff** — how valuable strategy $i$ is independent of the current mix. The potential is $V(x) = x^\top A x + q^\top x$, and Nash equilibria are exactly its KKT points on $\Delta_n$.
 
-The most direct home for problem (P) is the theory of mixed-strategy Nash equilibria. In any finite normal-form game, a mixed strategy profile $x \in \Delta_n$ assigns probabilities to each pure strategy. When payoffs are multilinear in the mixed strategies — as they always are — the game is a potential game if and only if there exists a quadratic function $V(x) = x^\top A x + q^\top x$ such that each player's gain from deviating equals the change in $V$. Nash equilibria are the KKT points of maximizing $V$ over the product of simplices.
+### Evolutionary ecology: species coexistence
 
-Even in small finite games, there are generically multiple Nash equilibria, and they can differ drastically in social welfare. The problem of finding the *best* one — the welfare-maximizing Nash equilibrium — is the direct computational question this post addresses.
+Consider $n$ species competing for overlapping sets of resources. The state $x \in \Delta_n$ is the relative abundance distribution. The payoff (per-capita growth rate) to species $i$ at state $x$ is:
 
-Conitzer & Sandholm (2003) showed this is NP-hard in general, and moreover inapproximable: no polynomial-time algorithm can guarantee being within any constant factor of optimal welfare. So the question is not "can we solve the general case?" but "can we characterize natural, large subclasses where it is tractable?"
+$$\pi_i(x) = q_i - \sum_j A_{ij} x_j$$
 
-### Network games and social welfare
+where $q_i > 0$ is species $i$'s intrinsic growth rate (how fast it grows in an empty environment), and $A_{ij} \geq 0$ is the competitive effect of species $j$ on species $i$ (resource overlap). This is the classical Lotka-Volterra competition model in population-game form. The potential is $V(x) = q^\top x - x^\top A x / 2$ (equivalently, maximize $-V$ for minimizing competition losses).
 
-A second important source of motivation comes from the large literature on network games, initiated by Ballester, Calvó-Armengol & Zenou (*Econometrica*, 2006) and developed by Bramoullé, Kranton & D'Amours (*AER*, 2014). In these models, each agent $i$ chooses an action $a_i \in \mathbb{R}_+$, and payoffs are linear-quadratic:
+Stable coexistence equilibria — states where multiple species persist — are local maxima of $V$. The ecologically optimal equilibrium maximizes total productivity $\sum_i x_i q_i$ net of competition losses. When species are ecologically differentiated — distinct niches, so $A$ is nearly diagonal — the potential is concave and there is a unique coexistence equilibrium. As niche overlap grows, $A$ develops large off-diagonal entries, the potential becomes indefinite, and multiple stable equilibria appear: different subsets of species can dominate depending on history.
 
-$$u_i(a) = b_i a_i - \tfrac{1}{2}a_i^2 + \beta \sum_j G_{ij}\, a_i a_j$$
+**What the tractable class means here:** the SDP is feasible when intrinsic growth rates $q_i$ are large relative to the indefiniteness induced by competitive overlaps. In ecological terms: when species have strong intrinsic fitness advantages that make their persistence robust, the global welfare-maximizing coexistence state can be found in polynomial time. The excluded regime — $q = 0$, pure competition for fixed resources — is exactly Motzkin-Straus (equivalent to max clique), and is always intractable.
 
-The parameter $\beta > 0$ captures strategic complementarities (effort is more valuable when neighbors exert effort), $\beta < 0$ captures substitutes, and $G$ is the adjacency matrix of the interaction network. This game is a potential game with $V(a) = b^\top a - \frac{1}{2}\|a\|^2 + \frac{\beta}{2} a^\top G a$.
+### Population games: technology adoption with network effects
 
-Bramoullé et al. show that the game's equilibrium structure is governed entirely by the lowest eigenvalue of $\beta G$: when $\beta \lambda_{\min}(G) > -1$ there is a unique interior equilibrium; when it falls below $-1$, stable equilibria exist in which some agents are inactive. This spectral threshold is exactly the boundary between a concave and an indefinite potential — the same boundary that separates easy and hard instances of (P).
+A population of agents adopts one of $n$ technologies. The state $x \in \Delta_n$ is the adoption distribution. The payoff to technology $i$ has two parts: an intrinsic quality $q_i > 0$ (how useful the technology is standalone), and network effects captured by $A_{ij}$: positive $A_{ij}$ means technologies $i$ and $j$ are *complementary* (each becomes more valuable when the other is widely used), negative means *substitutes* (competing for the same use case).
 
-Now consider what a social planner wants: to select or induce the equilibrium that maximizes $\sum_i u_i$. Galeotti, Golub & Goyal (*Econometrica*, 2020) study precisely this targeting problem: how should a planner allocate a limited budget of incentive changes to maximize welfare in such a network game? Their main result is that optimal targeting depends critically on the *principal components* of $G$ — the eigenvectors associated with the largest eigenvalues for strategic complements, and the smallest for substitutes. When there is a unique equilibrium, this is a clean optimization over intervention budgets. When the game has multiple equilibria — which requires an indefinite potential — the harder question of *which equilibrium to aim for* arises first, and that is exactly problem (P).
+Nash equilibria are stable adoption distributions — states where no agent wants to unilaterally switch. Multiple equilibria exist when network effects are strong and mixed: a technology can be locked in at high adoption even if it is not the welfare-maximizing choice, and a welfare-superior technology can fail to gain traction.
 
-### Evolutionary dynamics and frequency-dependent selection
+The welfare-maximizing equilibrium is the adoption distribution that maximizes aggregate utility $V(x) = x^\top A x + q^\top x$. Finding it matters for a regulator or platform designer choosing which technology to promote, which standards to subsidize, or which ecosystem to build around.
 
-The formulation as $\max_{x \in \Delta_n} V(x)$ is most natural in evolutionary game theory, where $x \in \Delta_n$ represents the frequency distribution over $n$ strategies in a large population. The replicator equation
+**What the tractable class means here:** the SDP is feasible when intrinsic quality differences $q$ are large relative to the cross-technology interaction structure. Concretely: if technologies have meaningfully differentiated standalone value — not just pure network-effect plays where quality is zero without adoption — then the welfare-maximizing adoption equilibrium can be computed exactly. The hard case is pure coordination games ($q = 0$), where the equilibrium is entirely determined by self-reinforcing adoption dynamics.
 
-$$\dot{x}_i = x_i\bigl(\pi_i(x) - \bar\pi(x)\bigr)$$
+### The common structure
 
-is the gradient flow of $V$ under the Shahshahani metric on $\Delta_n$ when payoffs are $\pi_i(x) = (Ax + q)_i$ — a standard assumption in many ecological models. The replicator dynamics thus climb $V$, converging to local maxima. Different initial conditions lead to different stable equilibria; the global maximum of $V$ is the highest-welfare equilibrium and the evolutionary state with highest mean population fitness.
-
-When $A$ is indefinite — which happens generically when strategies are neither uniformly cooperative nor uniformly competitive — the potential has multiple local maxima. The replicator dynamics can get trapped in a suboptimal one. Finding the global maximum tells us whether natural selection, if it could coordinate globally, would land somewhere substantially better than where it typically ends up.
+Both examples share the same pattern. The interaction matrix $A$ can be indefinite — combining complementarity (positive entries) and competition (negative entries) — creating multiple local optima on $\Delta_n$. The linear term $q > 0$ breaks symmetry by assigning standalone value to each strategy. The tractable class is precisely the regime where $q$ is strong enough relative to $A$'s indefiniteness that a single reparameterization can globally concavify $V$. Within this class, the global welfare maximum is computationally accessible; outside it, the problem is generically hard.
 
 ---
 
 ## The Mathematical Structure
 
-All three settings above share the same mathematical core. Whether we are looking for the best Nash equilibrium in a finite game, reasoning about which network-game equilibrium a planner should target, or finding the fittest evolutionary stable state, the problem reduces to optimizing a quadratic function over a simplex. With $n$ strategies and state $x \in \Delta_n = \{x \geq 0 : \mathbf{1}^\top x = 1\}$, the most natural class of potential games has a *quadratic* potential:
+Both settings above have the same mathematical core. Whether we are maximizing ecological productivity under competitive constraints, or finding the welfare-optimal technology adoption equilibrium, the problem reduces to optimizing a quadratic function over the simplex. With $n$ strategies and state $x \in \Delta_n = \{x \geq 0 : \mathbf{1}^\top x = 1\}$, the potential is:
 
 $$V(x) = x^\top A x + q^\top x$$
 
@@ -132,9 +130,11 @@ For a box domain $[0,1]^n$, the same argument requires checking $2^n$ vertices �
 
 The feasibility of (SDP) depends on both $A$ and $q$. At vertex $v_0 = 0$, the condition becomes $A + \text{diag}(c \circ q) \preceq 0$. For $c \geq 0$, this requires $q \geq 0$ (intrinsic payoffs must be nonnegative) and $c_i q_i$ large enough to dominate the positive eigenvalues of $A$. At vertex $v_i = e_i$, the condition involves $\nabla V(e_i) = 2Ae_i + q$, which mixes the interaction and intrinsic terms.
 
-**Intuitively**, the SDP is feasible when the intrinsic payoffs $q$ are strong relative to the indefiniteness of $A$. This is the regime where each strategy has a strong standalone reason to be played, and the strategic interactions are perturbative corrections. In evolutionary terms: external fitness pressures dominate frequency-dependent selection. In economic terms: private values dominate strategic complementarities.
+**Intuitively**, the SDP is feasible when the intrinsic payoffs $q$ are strong relative to the indefiniteness of $A$. This is the regime where each strategy has a strong standalone reason to be played, and the strategic interactions are secondary perturbations. In the ecological example: species have strong intrinsic growth rates that make their persistence robust to competitive pressure. In the technology adoption example: technologies have meaningfully differentiated standalone quality, not just pure network-effect value.
 
-**What's excluded**: games where strategic interactions dominate ($A$ strongly indefinite, $q$ small or zero). In particular, **homogeneous games** ($q = 0$) are generically outside the tractable class. The Motzkin-Straus problem — finding the maximum clique via $\max x^\top A_G x$ on the simplex with $q=0$ — is NP-hard, and one can show it is always outside the certifiable class for nontrivial graphs. This is a sanity check: the hardness of max clique is not accidentally circumvented.
+This gives the tractable class a clean interpretation: **games where identity dominates interaction**. Strategies matter for what they are, not just for what they do to each other. The certifiability condition quantifies precisely how strong this dominance needs to be.
+
+**What's excluded**: games where strategic interactions dominate ($A$ strongly indefinite, $q$ small or zero). In particular, **homogeneous games** ($q = 0$) are generically outside the tractable class. The Motzkin-Straus problem — finding the maximum clique via $\max x^\top A_G x$ on the simplex with $q=0$ — is NP-hard, and is always outside the certifiable class for nontrivial graphs. In ecological terms this is pure competition with no intrinsic fitness differences: any outcome is as good as any other in isolation, and history entirely determines which species dominate. This is a sanity check: the hardness of max clique is not accidentally circumvented.
 
 **The tractable class is convex in $(A, q)$ space** — it's the projection of an SDP feasible set. This means it can be tested efficiently, and it degrades gracefully: as $\|q\|$ grows relative to $\|A\|$, more and more games become certifiable.
 
@@ -176,14 +176,6 @@ Computational tractability and dynamical stability coincide. Outside the certifi
 ---
 
 ## References
-
-**Empirical motivation and network games**
-
-- Ballester, C., Calvó-Armengol, A. & Zenou, Y. (2006). Who's who in networks. Wanted: the key player. *Econometrica* 74(5), 1403–1417.
-- Bramoullé, Y., Kranton, R. & D'Amours, M. (2014). Strategic interaction and networks. *American Economic Review* 104(3), 898–930.
-- Galeotti, A., Golub, B. & Goyal, S. (2020). Targeting interventions in networks. *Econometrica* 88(6), 2445–2471.
-
-**Theory**
 
 - Monderer, D. & Shapley, L.S. (1996). Potential games. *Games and Economic Behavior* 14(1), 124–143.
 - Sandholm, W.H. (2010). *Population Games and Evolutionary Dynamics.* MIT Press.
