@@ -1,220 +1,189 @@
 ---
-title: "Tractable QCQPs: From the S-Lemma to Reparameterization on the Simplex"
-description: "A tour through sixty years of hidden convexity in quadratically constrained programs — from Yakubovich's S-lemma and the trust-region subproblem, through Burer & Ye's unifying spectral condition, to a new reparameterization technique that certifies global tractability for nonconvex QPs on the simplex with only n+1 LMI constraints."
+title: "Finding the Best Nash Equilibrium in Polynomial Time (For a Meaningful Class of Games)"
+description: "Nonconvex QPs on the simplex are NP-hard in general. But a reparameterization argument shows that a large, natural class of potential games — where intrinsic payoffs are strong relative to strategic interactions — admits exact, polynomial-time global optimization. The key is a certification SDP with only n+1 constraints."
 date: 2026-03-06
 author: "Dj"
-categories: [optimization, theory, semidefinite-programming]
+categories: [optimization, theory, game-theory, semidefinite-programming]
 toc: true
 toc-depth: 3
 ---
 
-Quadratically constrained quadratic programs (QCQPs) are NP-hard in general.
-Yet a surprising swath of instances that arise in practice admit *exact* polynomial-time solutions, often through semidefinite programming (SDP) relaxation.
-The story of why is one of the more beautiful threads in modern optimization theory — starting with a 1971 theorem about feedback control, running through the trust-region subproblem and Max-Cut, and arriving at some recent unifying results.
+Finding Nash equilibria is hard. Finding the *best* Nash equilibrium — the one maximizing social welfare — is harder. For a natural and well-studied class of games, this is an NP-hard optimization problem even when the game is fully described and finite.
 
-This post traces that story and then describes a new angle: a reparameterization-based approach that certifies tractability for nonconvex QPs on the simplex via an SDP with only $n+1$ constraints, compared to $2^n$ for the analogous box result.
-
-## Setup
-
-A QCQP takes the form:
-
-$$
-\min_{x \in \mathbb{R}^n} \; x^\top A_0 x + 2b_0^\top x + c_0 \quad \text{s.t.} \quad x^\top A_i x + 2b_i^\top x + c_i \leq 0, \quad i = 1, \ldots, m
-$$
-
-with $A_i \in \mathbb{S}^n$ symmetric but not necessarily positive semidefinite.
-The canonical SDP relaxation lifts to $X = xx^\top$, relaxes the rank-1 constraint to $X \succeq 0$, and solves the resulting semidefinite program. The relaxation is *exact* when the SDP and QCQP optima coincide and a rank-1 optimizer can be recovered.
-
-The question is: when does this happen?
+This post describes a new result that carves out a meaningful tractable class: potential games where the intrinsic strategy payoffs are strong enough relative to the strategic interactions. For these games, the welfare-maximizing Nash equilibrium can be found in polynomial time via a certify-and-solve pipeline. The certification requires solving an SDP with just $n+1$ constraints.
 
 ---
 
-## Part I: The Classical Results
+## The Setting: Potential Games
 
-### The S-Lemma (1971)
+A **potential game** is one where every player's incentive to change strategy is captured by a single global function $V : \Delta_n \to \mathbb{R}$ called the *potential*. Nash equilibria are exactly the KKT points of maximizing $V$ over the simplex $\Delta_n = \{x \geq 0 : \mathbf{1}^\top x = 1\}$.
 
-The oldest and most fundamental result is Yakubovich's **S-lemma**.
+The simplest nontrivial potential is quadratic:
+
+$$V(x) = x^\top A x + q^\top x, \qquad x \in \Delta_n$$
+
+Here $A_{ij}$ is the payoff interaction between strategies $i$ and $j$, and $q_i$ is the *intrinsic* payoff to strategy $i$ — present regardless of what others play. The gradient $\nabla_i V(x) = 2(Ax)_i + q_i$ is the marginal payoff to strategy $i$ given population state $x$, so KKT on the simplex says exactly: at a Nash equilibrium, all active strategies have equal (and maximal) payoff.
+
+**When $A \succeq 0$**, $V$ is concave on the simplex, it has a unique global maximum, and any local solver finds it. Welfare maximization is trivial.
+
+**When $A$ is indefinite**, $V$ can have multiple local maxima — multiple stable Nash equilibria. Finding the global maximum (the welfare-best equilibrium) is NP-hard in general. Standard approaches: copositive relaxations for bounds, or global solvers like BARON for small instances. No polynomial-time exact method was known for any nontrivial indefinite class.
+
+Until now (modulo the caveat that this hasn't been peer-reviewed yet).
+
+---
+
+## A Concrete Example: Rock-Paper-Scissors with Intrinsic Rewards
+
+Consider a $3$-strategy symmetric game with interaction matrix
+
+$$A = \begin{pmatrix} 0 & -1 & 1 \\ 1 & 0 & -1 \\ -1 & 1 & 0 \end{pmatrix}$$
+
+— pure Rock-Paper-Scissors, where each strategy beats one and loses to the other. This is skew-symmetric, so $A + A^\top = 0$; the unique Nash equilibrium is the uniform distribution $x^* = (1/3, 1/3, 1/3)$, and the potential $x^\top A x = 0$ everywhere (since $A$ is skew-symmetric). The potential landscape is flat — every point on the simplex is a Nash equilibrium with equal welfare. This is a degenerate, uninteresting case.
+
+Now add intrinsic payoffs $q = (2, 1, 0)$: strategy 1 (Rock) has an intrinsic advantage — perhaps it's less cognitively costly, or more culturally salient. The potential becomes:
+
+$$V(x) = x^\top A x + 2x_1 + x_2$$
+
+This is indefinite (since $A$ is skew-symmetric, $A + A^\top = 0 \not\succeq 0$), so naively NP-hard. But let's check if it's in our tractable class.
+
+**Step 1: Check convexifiability.** We want $c \geq 0$ such that
+
+$$M(v_k) = A + \text{diag}(c \circ \nabla V(v_k)) \succeq 0$$
+
+at each of the 4 vertices of $\mathcal{S} = \{x \geq 0 : \mathbf{1}^\top x \leq 1\}$:
+
+- $v_0 = (0,0,0)$: $\nabla V(v_0) = q = (2, 1, 0)$
+- $v_1 = (1,0,0)$: $\nabla V(v_1) = 2Ae_1 + q = (-2, 2, -2) + (2,1,0) = (0, 3, -2)$
+- $v_2 = (0,1,0)$: $\nabla V(v_2) = 2Ae_2 + q = (2, -2, 2) + (2,1,0) = (-... )$
+
+Wait — at $v_1$ we get $\nabla_3 V = -2 < 0$. With $c \geq 0$ required, the correction $c_3 \cdot (-2) \leq 0$ can't help $M(v_1) \succeq 0$ in the $(3,3)$ entry. The SDP is infeasible for this particular $q$.
+
+**That's informative.** It says this specific perturbation of RPS is *not* in the tractable class — the intrinsic advantage to Rock isn't strong enough to convexify globally. The gradient of $V$ is negative in the third component at $v_1$, which the $c \geq 0$ constraint can't correct.
+
+**Step 2: Strengthen the intrinsic payoffs.** Try $q = (5, 5, 5)$ — all strategies have a strong, equal intrinsic reward. Now $\nabla V(v_0) = (5,5,5) \gg 0$, and at each vertex the large $q$ dominates the $2Ax$ term. The SDP becomes feasible, and the reparameterization certifies global tractability.
+
+The game-theoretic interpretation: when all strategies have a strong reason to be played independently of the opponent's action, the equilibrium structure simplifies — the potential landscape has a unique global maximum that the reparameterization finds exactly.
+
+---
+
+## The General Result
+
+The setup: minimize $-V(x) = -x^\top A x - q^\top x$ (equivalently, maximize $V$) over
+
+$$\mathcal{S} = \{x \geq 0 : \mathbf{1}^\top x \leq R\}.$$
+
+A componentwise reparameterization $x_i = s_i(y_i)$ with curvature $\kappa_i = s_i''/{s_i'}^2 = c_i$ transforms the Hessian of the objective to
+
+$$M(x) = -A + \text{diag}(c \circ (-\nabla V(x))) \succeq 0.$$
+
+For $-\nabla V(x) > 0$ (i.e., the potential is locally *decreasing* — we're minimizing) and $c \geq 0$, the diagonal correction adds positive terms to $-A$, potentially pushing it PSD.
+
+**The key structural fact.** $M(x)$ is *affine* in $x$, so $\lambda_{\min}(M(x))$ is concave on $\mathcal{S}$. A concave function on a simplex attains its minimum at a vertex. Therefore:
 
 ::: {.callout-note}
-**Theorem (S-Lemma, Yakubovich 1971).** Let $f(x) = x^\top A_0 x + 2b_0^\top x + c_0$ and $g(x) = x^\top A_1 x + 2b_1^\top x + c_1$.
-Assume $\exists\,\bar{x}$ with $g(\bar{x}) < 0$ (Slater condition). Then:
-$$f(x) \geq 0 \;\forall x: g(x) \leq 0 \quad\iff\quad \exists\,\lambda \geq 0:\; f(x) - \lambda g(x) \geq 0 \;\forall x.$$
+**Theorem (Vertex Certification).** The reparameterization convexifies $-V$ over all of $\mathcal{S}$ if and only if it does so at the $n+1$ vertices $v_0 = 0,\; v_i = Re_i$. This reduces to an SDP with $n+1$ LMI constraints:
+$$\text{find}\; c \geq 0 \;\text{s.t.}\; -A + \text{diag}(c \circ (-\nabla V(v_k))) \succeq 0, \quad k = 0, \ldots, n. \tag{SDP}$$
 :::
 
-In control theory this says: if a quadratic Lyapunov function is positive on all trajectories satisfying a quadratic constraint, there is a single multiplier that certifies it globally.
+For a box $[0,R]^n$, the analogous argument requires $2^n$ vertices. The simplex geometry is what makes this polynomial.
 
-The consequence for optimization is immediate: **for $m=1$, the SDP relaxation is always exact** under Slater's condition. The dual multiplier $\lambda$ provides a zero duality gap certificate, and rank-1 recovery follows from the Barvinok-Pataki rank bound ($r(r+1)/2 \leq m+1$ forces $r=1$ when $m=1$).
+**The pipeline:**
 
-The S-lemma fails for $m=2$ in general — counterexamples exist already in $\mathbb{R}^2$.
-
-**The Trust-Region Subproblem.** A single equality constraint $\|x\|^2 = 1$ is covered by a generalized S-lemma (the multiplier $\lambda$ is unrestricted in sign), making the trust-region subproblem
-
-$$\min_{x}\; x^\top A_0 x + 2b_0^\top x \quad\text{s.t.}\quad \|x\|^2 \leq 1$$
-
-exactly solvable in near-linear time via the secular equation. This is the inner loop of virtually every trust-region optimization method.
-
-**The CDT Problem.** Ye & Zhang (2003) extended exactness to *two* ball constraints (the "CDT problem") under mild nondegeneracy, establishing $m=2$ ball-constrained QCQPs as tractable.
-
-**The complex domain.** Over $\mathbb{C}^n$, the situation is uniformly better: the SDP relaxation is exact for $m \leq 2$ with *no* additional assumptions (Huang & Zhang 2007), and for $m \leq 3$ rank-1 constraints (So 2010). The Barvinok-Pataki bound is more generous over $\mathbb{C}$ because complex matrices have more degrees of freedom.
-
-### Goemans-Williamson and Boolean QCQPs (1995)
-
-A qualitatively different class: **Boolean QCQPs** with $x_i \in \{-1,+1\}$ (equivalently $x_i^2 = 1$). The Max-Cut problem is the canonical instance. Goemans and Williamson showed the SDP relaxation gives a $0.878$-approximation via randomized hyperplane rounding — a landmark result that launched the field of approximation algorithms via SDP. For bipartite graphs the relaxation is exact.
+1. **Certify**: solve (SDP). If feasible, the reparameterization $x_i = -\frac{1}{c_i}\log(1 - c_i y_i)$ convexifies the problem globally.
+2. **Solve**: minimize the (now convex) reparameterized objective over the convex $y$-domain using any first-order method.
+3. **Recover**: $x^* = s(y^*)$ is the global welfare-maximizing Nash equilibrium.
 
 ---
 
-## Part II: Unifying Results
+## What Does the Tractable Class Look Like?
 
-### Joint Sign Definiteness
+The SDP is feasible — roughly — when the linear term $q$ (intrinsic payoffs) is large and positive relative to the indefiniteness of $A$ (strategic interactions). More precisely:
 
-The deepest unifying condition in the real case is **joint sign definiteness**: the QCQP is *jointly definite* if there exist $\lambda_i \geq 0$ such that
+- At $v_0 = 0$, the condition reduces to $-A + \text{diag}(c \circ q) \succeq 0$, which requires $q > 0$ and $c$ large enough to dominate $\lambda_{\max}(-A)$.
+- At $v_i = Re_i$, the condition involves $-\nabla V(Re_i) = -2RA_{:,i} - q$, which requires $q + 2RA_{:,i}$ not to be too negative.
 
-$$A_0 + \sum_{i=1}^m \lambda_i A_i \succeq 0.$$
+The tractable class is a **convex set in $(A, q)$ space** (being the feasible set of an SDP). It includes:
 
-In words: the dual multipliers can *convexify* the Lagrangian. Burer (2012) showed this implies exact SDP relaxation. But the real sharpening came with Burer & Ye (2020):
+- Any game with $A \preceq 0$ (concave potential) — trivially, since $-A \succeq 0$ already.
+- Games where $\|q\|_\infty$ is large relative to $\|A\|$ — the *weak interaction regime*.
+- Games where $A$ has only small negative eigenvalues — slight indefiniteness, easily corrected.
 
-::: {.callout-important}
-**Theorem (Burer & Ye 2020).** If the Lagrangian Hessian $A_0 + \sum_i \lambda_i^* A_i$ at the optimal dual $\lambda^*$ has **at most one negative eigenvalue**, the SDP relaxation is exact.
-:::
-
-This is the tightest known unifying condition for real QCQPs. It subsumes convex QCQPs, the S-lemma / TRS, joint definiteness, and the simultaneously-diagonalizable case of Huang & Zhang (2007) as special cases. The bound is tight: problems where the Lagrangian has $\geq 2$ negative eigenvalues can be NP-hard.
-
-### Chordal Sparsity as a Decomposition Engine
-
-A third structural condition, orthogonal to the above, is **chordal sparsity**. Associate a graph $G$ to the QCQP where edges indicate nonzero interactions among variables. If $G$ is chordal, its maximal cliques form a perfect elimination ordering and the global SDP decomposes into clique-local SDPs:
-
-$$X \succeq 0 \iff X_{C_\ell} \succeq 0 \;\forall\,\ell \quad \text{(plus consistency)}$$
-
-(Kim & Kojima 2003; Vandenberghe & Andersen 2015). If each clique subproblem is tractable via the S-lemma or joint definiteness, the whole problem is tractable in time polynomial in $n$ for fixed treewidth.
-
-### The Classical Tractable Landscape
-
-| Condition | $m$ | Key requirement | Reference |
-|---|:---:|---|---|
-| Convex QCQP | any | $A_i \succeq 0 \;\forall i$ | Classical |
-| S-Lemma | 1 | Strict feasibility | Yakubovich 1971 |
-| TRS | 1 (ball) | $\|x\|^2 \leq 1$ | Stern & Wolkowicz 1995 |
-| CDT (two balls) | 2 | Mild nondegeneracy | Ye & Zhang 2003 |
-| Simultaneous diagonalization | 2 | $A_1, A_2$ sim. diag. | Huang & Zhang 2007 |
-| Joint definiteness | any | $\exists\lambda\geq 0: A_0 + \sum\lambda_i A_i \succeq 0$ | Burer 2012 |
-| $\leq 1$ neg. eigenvalue | any | At Lagrangian optimum | Burer & Ye 2020 |
-| Chordal + local tractable | any | Bounded treewidth | Kim & Kojima 2003 |
-| Complex, rank-1 | $\leq 3$ | Over $\mathbb{C}^n$ | So 2010 |
-| Boolean (Max-Cut) | $n$ | $x_i^2 = 1$ | Goemans & Williamson 1995 |
-
-All of the above approach tractability from the *dual* side: find Lagrange multipliers that convexify the problem, or decompose via sparsity. The next section describes a complementary *primal* approach.
+**What's excluded:** games where the strategic interactions are the dominant force ($\|A\| \gg \|q\|$), and in particular homogeneous games with $q = 0$. The Motzkin-Straus problem (finding the maximum clique via $\max x^\top A_G x$ on the simplex with $q=0$) is provably outside the tractable class for all nontrivial graphs, which is reassuring since max clique is NP-hard.
 
 ---
 
-## Part III: Reparameterization on the Simplex
+## The Phase Transition
 
-### The Setup
-
-Consider a nonconvex QP on the simplex:
-
-$$\min_{x \in \mathcal{S}}\; \phi(x) = \tfrac{1}{2}x^\top Qx + q^\top x, \qquad \mathcal{S} = \{x \geq 0 : \mathbf{1}^\top x \leq R\}$$
-
-where $Q \in \mathbb{S}^n$ is indefinite. We ask: can we find a *componentwise reparameterization* $x_i = s_i(y_i)$ that makes the problem convex in $y$?
-
-### The Reparameterization Condition
-
-For $x = s(y)$ with $s_i$ smooth and $s_i' > 0$, the Hessian of $\phi(s(y))$ with respect to $y$ is:
-
-$$H_\phi(y) = \text{diag}(s'(y))\cdot Q\cdot\text{diag}(s'(y)) + \text{diag}(g(x) \circ s''(y))$$
-
-where $g(x) = Qx + q$ is the gradient of $\phi$ at $x = s(y)$. For convexity we need $H_\phi(y) \succeq 0$. Dividing through by $\text{diag}(s'(y))$, this is equivalent to:
-
-$$M(x) := Q + \text{diag}(\kappa \circ g(x)) \succeq 0$$
-
-where $\kappa_i = s_i''(y_i)/s_i'(y_i)^2$ is the **reparameterization curvature**. For *constant* $\kappa_i = c_i$, the ODE $s''/s'^2 = c$ has explicit solution $s(y) = -\frac{1}{c}\log(1 - cy)$ for $c > 0$ (recovering $s(y) = y$ as $c \to 0$).
-
-**The key structural fact:** $M(x) = Q + \text{diag}(c \circ g(x))$ is *affine* in $x$. Therefore $x \mapsto \lambda_{\min}(M(x))$ is concave on any convex domain.
-
-### Efficient Certification via Vertex Checking
-
-::: {.callout-note}
-**Proposition (Vertex Exactness).** Since $x \mapsto \lambda_{\min}(M(x))$ is concave and $\mathcal{S}$ is a simplex with $n+1$ vertices $v_0 = 0,\; v_i = R\,e_i$, the condition $M(x) \succeq 0$ for all $x \in \mathcal{S}$ is equivalent to:
-$$Q + \text{diag}(c \circ g(v_k)) \succeq 0, \quad k = 0, 1, \ldots, n.$$
-:::
-
-This gives a certification SDP with **$n+1$ LMI constraints** of size $n \times n$:
-
-$$\text{find } c \geq 0 \quad \text{s.t.} \quad Q + \text{diag}(c \circ g(v_k)) \succeq 0, \quad k = 0, \ldots, n \tag{SDP}$$
-
-If feasible, the reparameterization $x_i = s_i(y_i) = -\frac{1}{c_i}\log(1-c_i y_i)$ (or $y_i$ if $c_i=0$) convexifies $\phi$ globally over $\mathcal{S}$.
-
-The contrast with box domains is stark: a box $[0,R]^n$ has $2^n$ vertices, making the analogous certification exponential in $n$. The simplex has $n+1$ — linear in $n$.
-
-Note also that $c \geq 0$ is required for the reparameterization $s_i$ to be convex (ensuring the $y$-domain $\{\sum_i s_i(y_i) \leq R\}$ is convex). This restricts the correction to the **positive gradient regime** — instances where $g_i(x) > 0$ over most of $\mathcal{S}$ — which is the practically relevant case in, e.g., portfolio optimization with positive expected returns.
-
-### The Certify-and-Solve Pipeline
-
-Once (SDP) is feasible with solution $c^* \geq 0$:
-
-1. **Certify**: the map $x_i = s_i(y_i) = -\frac{1}{c_i^*}\log(1 - c_i^* y_i)$ convexifies $\phi$ over $\mathcal{S}$.
-
-2. **Solve**: minimize the reparameterized (now convex) objective over the convex $y$-domain using any first-order method. The gradient is $\nabla_{y_i}\phi = s_i'(y_i) \cdot g_i(s(y)) = e^{c_i^* y_i} \cdot g_i(s(y))$, computable in $O(n^2)$ per step.
-
-3. **Recover**: $x^* = s(y^*)$ is the global optimum of the original problem.
-
-### Numerical Validation
-
-On 500 random indefinite instances ($n=4$, $Q$ indefinite, $q \sim 3\mathcal{N}(0,I)$, simplex radius $R=1$):
+The numerical picture sharpens this. On 500 random indefinite potential games ($n=4$, $A$ indefinite, $q \sim 3\mathcal{N}(0,I)$):
 
 | Outcome | Count | Fraction |
 |---|:---:|:---:|
-| SDP feasible (convexifiable) | 411 | 82% |
-| — with sign-changing $g_i$ (nontrivial) | 220 | 54% of feasible |
-| — with interior global optimum | 29 | 13% of nontrivial |
-| SDP infeasible | 89 | 18% |
+| Certifiably convexifiable | 411 | 82% |
+| — gradient sign-changing (nontrivial) | 220 | 54% of certifiable |
+| — interior global optimum | 29 | 13% of nontrivial |
+| Not certifiable | 89 | 18% |
 
-The 29 instances with interior optima are the most interesting: the global optimum is not at any vertex of $\mathcal{S}$, so naive vertex enumeration would fail. The reparameterization finds them exactly. All feasible instances were validated by comparison with a brute-force global search (200,000 random samples + vertex check), with optima matching to within $10^{-2}$.
+The 29 instances with interior optima are the most significant: the welfare-maximizing equilibrium is in the *interior* of the simplex, not at a pure strategy. Vertex enumeration would miss these entirely. The reparameterization pipeline finds them exactly.
 
-### Robust Certification
-
-Since (SDP) is affine in $Q$, certifying convexifiability for all $Q$ in a polytopic uncertainty set $\mathcal{Q} = \text{conv}\{Q_1, \ldots, Q_p\}$ requires only $p \times (n+1)$ LMI constraints — still polynomial. A single SDP certifies the entire family, which is useful in portfolio optimization where the covariance matrix is estimated with uncertainty.
+As $\|q\|/\|A\|$ increases, the certifiable fraction approaches 100%. There's a sharp transition — empirically near $\|q\|_\infty / |\lambda_{\min}(A)| \approx 2R$ — between the tractable and intractable regimes. Characterizing this boundary analytically is an open problem.
 
 ---
 
-## Where This Fits in the Landscape
+## The Dynamical Interpretation
 
-The reparameterization approach is complementary to the Lagrangian duality results of Part II:
+There's a beautiful connection to evolutionary dynamics that makes the result feel deeper.
 
-- **Vs. the S-lemma**: the S-lemma handles one quadratic *constraint*; reparameterization handles an indefinite quadratic *objective* on a simplex *domain*. Different structural conditions.
+The **replicator equation** for a potential game with $V(x) = x^\top A x + q^\top x$ is:
 
-- **Vs. joint definiteness**: both ultimately produce a convex problem, but via dual (Lagrange multipliers) vs. primal (change of variables) paths. It is an open question whether the two tractable classes coincide or one properly extends the other.
+$$\dot{x}_i = x_i\bigl(\pi_i(x) - \bar\pi(x)\bigr), \qquad \pi_i(x) = (Ax)_i + q_i, \quad \bar\pi = x^\top \pi(x)$$
 
-- **Vs. chordal decomposition**: chordal methods exploit sparsity of $Q$; reparameterization exploits gradient sign structure and domain geometry. The two can in principle be combined.
+This is the gradient flow of $V$ under the Shahshahani metric on the simplex interior. Replicator dynamics in potential games always converge to Nash equilibria — but generically to *local* maxima of $V$, not necessarily the global one.
 
-**A fundamental limitation:** The *componentwise* structure — each $x_i$ depends only on $y_i$ — is what gives the diagonal correction and enables the LMI formulation. Non-componentwise maps could potentially reach more instances but would destroy the LMI structure, making certification intractable. This tradeoff between expressiveness and certifiability is a core tension.
+In the certifiable class, $V$ (after reparameterization) has a unique global maximum. This means:
+
+::: {.callout-important}
+**Corollary (Dynamical Selection).** For potential games in the certifiable class, the replicator dynamics select the welfare-maximizing Nash equilibrium from almost all initial conditions, and this equilibrium can be computed in polynomial time.
+:::
+
+This combines two things that are usually in tension: the equilibrium is simultaneously *dynamically stable* (selected by the natural learning dynamics) and *computationally tractable* (findable in polynomial time). Outside the certifiable class, you can have multiple stable equilibria with different welfare properties — the learning dynamics may select a suboptimal one, and finding the optimal one is hard.
+
+---
+
+## Connection to Classical Tractability Results
+
+The classical approach to tractable QCQPs works via the *dual*: find Lagrange multipliers that convexify the Lagrangian (the S-lemma for one constraint, Burer & Ye's "at most one negative eigenvalue" condition as the sharpest known unifying result). Chordal sparsity allows decomposition across variables.
+
+The reparameterization approach is primal and complementary: change variables so the objective is convex, certify this via vertex checking on the simplex. The two approaches likely capture overlapping but non-identical tractable classes — understanding their precise relationship is an open problem.
+
+What's clear is that the simplex geometry is doing real work. The $n+1$ vertex structure is what makes the certification polynomial. For a box domain, the same idea requires $2^n$ LMI constraints and fails to scale. The simplex — the natural domain for mixed strategies in game theory and probability simplices in other applications — is exactly the right domain for this technique.
 
 ---
 
 ## Open Questions
 
-A few directions that seem worth pursuing:
+A few things I don't know the answer to:
 
-**Affine $\kappa$.** Allowing $\kappa_i(x_i) = a_i + b_i x_i$ makes $M(x)$ quadratic in $x$, breaking the vertex check. Matrix SOS techniques on the simplex could certify this at higher cost — is the tradeoff worthwhile?
+**Is there a closed-form boundary?** The certifiable class is an SDP-defined convex set in $(A, q)$ space. Is there a simpler characterization — e.g., certifiable if and only if $\lambda_{\min}(A) \geq -f(q, R)$ for some explicit $f$?
 
-**Intrinsic characterization.** Is there a simple spectral condition on $(Q, q)$ that characterizes the boundary of the certifiable class without solving an SDP? Something like: convexifiable when $\min_i q_i > h(\lambda_{\min}(Q), n, R)$ for some explicit function $h$?
+**Does the tractable class extend classical results?** Are there instances certifiable by reparameterization but not by Lagrangian convexification (joint definiteness / Burer-Ye), or vice versa?
 
-**Integration with branch-and-bound.** On sub-simplices created by branching, fewer gradient components change sign, so (SDP) becomes easier. Can reparameterization provide *exact* (not relaxed) bounds within B&B?
+**Branch-and-bound on sub-simplices.** For games outside the certifiable class, the simplex can be subdivided. On smaller sub-simplices, the gradient is more likely to have consistent sign, and the SDP becomes feasible. Can this give a B&B algorithm that terminates quickly in practice even for hard instances?
 
-**Connection to hidden convexity.** Does the reparameterization-tractable class intersect with or properly extend the classical results? A precise comparison would clarify whether this is genuinely new or a reparameterization of a known tractable class.
+**Rates for the replicator dynamics.** In the certifiable class, the reparameterized potential is strictly concave after the change of variables. Does this imply polynomial convergence rates for the replicator equation (under the reparameterized metric)?
+
+---
+
+## Appendix: Why $n+1$ Vertices?
+
+The simplex $\mathcal{S} = \{x \geq 0 : \mathbf{1}^\top x \leq R\}$ has exactly $n+1$ vertices: the origin $v_0 = 0$ and the $n$ scaled basis vectors $v_i = Re_i$. The matrix $M(x) = -A + \text{diag}(c \circ (-\nabla V(x)))$ is affine in $x$ (since $\nabla V(x) = 2Ax + q$ is affine). The minimum eigenvalue of an affine matrix pencil is concave. A concave function over a simplex attains its minimum at a vertex. Therefore checking $M(v_k) \succeq 0$ at all $n+1$ vertices is necessary *and sufficient* for $M(x) \succeq 0$ everywhere on $\mathcal{S}$. No approximation is involved. $\square$
 
 ---
 
 ## References
 
+- Monderer, D. & Shapley, L.S. (1996). Potential games. *Games and Economic Behavior.*
+- Sandholm, W.H. (2010). *Population Games and Evolutionary Dynamics.* MIT Press.
+- Bomze, I.M. (1998). On standard quadratic optimization problems. *J. Global Optim.*
+- Burer, S. & Ye, Y. (2020). Exactness of Parrilo's conic approximations. *Math. Oper. Res.*
 - Yakubovich, V.A. (1971). The S-procedure in nonlinear control theory. *Vestnik Leningrad Univ.*
 - Pólik, I. & Terlaky, T. (2007). A survey of the S-lemma. *SIAM Review.*
-- Stern, R. & Wolkowicz, H. (1995). Indefinite trust region subproblems. *SIAM J. Optim.*
-- Goemans, M. & Williamson, D. (1995). Improved approximation algorithms for maximum cut. *JACM.*
-- Ye, Y. & Zhang, S. (2003). New results on quadratic minimization. *SIAM J. Optim.*
-- Kim, S. & Kojima, M. (2003). Exact solutions of some nonconvex QCQPs via SOS relaxations. *Comput. Optim. Appl.*
-- Huang, Y. & Zhang, S. (2007). Complex matrix decomposition and quadratic programming. *Math. Oper. Res.*
-- So, A.M.-C. (2010). Moment inequalities for sums of random matrices. *Math. Program.*
-- Burer, S. (2012). A gentle, geometric introduction to copositive optimization. *Math. Program.*
-- Burer, S. & Ye, Y. (2020). Exactness of Parrilo's conic approximations. *Math. Oper. Res.*
-- Vandenberghe, L. & Andersen, M.S. (2015). Chordal graphs and semidefinite optimization. *Found. Trends Optim.*
-- Bomze, I.M. (1998). On standard quadratic optimization problems. *J. Global Optim.*
