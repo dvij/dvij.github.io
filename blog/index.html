@@ -357,6 +357,7 @@ window.Quarto = {
   </ul></li>
   <li><a href="#what-games-are-in-the-tractable-class" id="toc-what-games-are-in-the-tractable-class" class="nav-link" data-scroll-target="#what-games-are-in-the-tractable-class">What Games Are in the Tractable Class?</a>
   <ul class="collapse">
+  <li><a href="#worked-example-population-routing-game" id="toc-worked-example-population-routing-game" class="nav-link" data-scroll-target="#worked-example-population-routing-game">Worked example: population routing game</a></li>
   <li><a href="#numerical-evidence" id="toc-numerical-evidence" class="nav-link" data-scroll-target="#numerical-evidence">Numerical evidence</a></li>
   <li><a href="#the-dynamical-corollary" id="toc-the-dynamical-corollary" class="nav-link" data-scroll-target="#the-dynamical-corollary">The dynamical corollary</a></li>
   </ul></li>
@@ -504,6 +505,72 @@ window.Quarto = {
 <p>This gives the tractable class a clean interpretation: <strong>games where identity dominates interaction</strong>. Strategies matter for what they are, not just for what they do to each other. The certifiability condition quantifies precisely how strong this dominance needs to be.</p>
 <p><strong>What’s excluded</strong>: games where strategic interactions dominate (<span class="math inline">A</span> strongly indefinite, <span class="math inline">q</span> small or zero). In particular, <strong>homogeneous games</strong> (<span class="math inline">q = 0</span>) are generically outside the tractable class. The Motzkin-Straus problem — finding the maximum clique via <span class="math inline">\max x^\top A_G x</span> on the simplex with <span class="math inline">q=0</span> — is NP-hard, and is always outside the certifiable class for nontrivial graphs. In ecological terms this is pure competition with no intrinsic fitness differences: any outcome is as good as any other in isolation, and history entirely determines which species dominate. This is a sanity check: the hardness of max clique is not accidentally circumvented.</p>
 <p><strong>The tractable class is convex in <span class="math inline">(A, q)</span> space</strong> — it’s the projection of an SDP feasible set. This means it can be tested efficiently, and it degrades gracefully: as <span class="math inline">\|q\|</span> grows relative to <span class="math inline">\|A\|</span>, more and more games become certifiable.</p>
+<section id="worked-example-population-routing-game" class="level3">
+<h3 class="anchored" data-anchor-id="worked-example-population-routing-game">Worked example: population routing game</h3>
+<p>To make the machinery concrete, here is a small instance where every number has a physical meaning, the interaction matrix is genuinely indefinite, and the reparameterization framework certifies exact solvability.</p>
+<p><strong>Setup.</strong> A unit mass of commuters splits across <span class="math inline">n = 3</span> routes each morning:</p>
+<ul>
+<li><strong>Route 1 — City-center highway.</strong> Short and direct, but funnels through downtown bottlenecks, so highly congestion-sensitive.</li>
+<li><strong>Route 2 — Wide bypass.</strong> Longer and slightly slower in free flow, but a multi-lane ring road that absorbs traffic well.</li>
+<li><strong>Route 3 — Secondary road.</strong> Moderate distance and moderate congestion sensitivity; shares a merge point with both other routes.</li>
+</ul>
+<p>The population state <span class="math inline">x \in \Delta_3</span> is the fraction of commuters on each route. The potential is <span class="math inline">V(x) = \tfrac{1}{2}\, x^\top Q\, x + q^\top x</span>, where <span class="math inline">Q</span> encodes pairwise congestion interactions and <span class="math inline">q</span> encodes intrinsic route quality (free-flow travel time, tolls, road condition):</p>
+<p><span class="math display">
+Q = \begin{pmatrix} 2 &amp; -1 &amp; 0.5 \\ -1 &amp; 0.5 &amp; 1 \\ 0.5 &amp; 1 &amp; 1 \end{pmatrix}, \qquad q = \begin{pmatrix} 4.5 \\ 4 \\ 1 \end{pmatrix}.
+</span></p>
+<p><strong>What each entry means.</strong></p>
+<ul>
+<li><em>Diagonal (self-congestion).</em> <span class="math inline">Q_{11} = 2 &gt; Q_{33} = 1 &gt; Q_{22} = 0.5</span>: the city-center highway is most congestion-sensitive (narrow bottleneck), the bypass is least (wide, multi-lane), and the secondary road is in between.</li>
+<li><em><span class="math inline">Q_{12} = -1</span> (complementarity).</em> Splitting traffic between the highway and the bypass <em>reduces</em> total delay — they are parallel corridors that share no bottleneck. The negative entry captures this relief effect.</li>
+<li><em><span class="math inline">Q_{13} = 0.5</span>, <span class="math inline">Q_{23} = 1</span> (cross-congestion).</em> The secondary road shares a merge point with both alternatives, so adding traffic to route 3 worsens routes 1 and 2. The bypass–secondary interaction (<span class="math inline">Q_{23} = 1</span>) is stronger because they merge closer to the bypass’s entry ramp.</li>
+<li><em>Intrinsic quality <span class="math inline">q</span>.</em> Route 1 has the highest standalone payoff (<span class="math inline">q_1 = 4.5</span>): in free flow it is the fastest. The bypass is close behind (<span class="math inline">q_2 = 4</span>). The secondary road is much less attractive on its own (<span class="math inline">q_3 = 1</span>): longer, with worse road surface.</li>
+</ul>
+<p><strong>The matrix is indefinite.</strong> <span class="math inline">\det(Q) = -3.125 &lt; 0</span>, so <span class="math inline">Q</span> has both positive and negative eigenvalues. Maximizing <span class="math inline">V</span> over <span class="math inline">\Delta_3</span> is a nonconvex QP — the welfare-maximizing traffic split cannot be found by standard convex optimization.</p>
+<p><strong>Coordinate reduction.</strong> Eliminate route 3 via <span class="math inline">x_3 = 1 - x_1 - x_2</span> to get a reduced problem on <span class="math inline">\{y \geq 0,\, \mathbf{1}^\top y \leq 1\} \subset \mathbb{R}^2</span>:</p>
+<p><span class="math display">
+\tilde{Q} = \begin{pmatrix} 2 &amp; -1.5 \\ -1.5 &amp; -0.5 \end{pmatrix}, \qquad \tilde{q} = \begin{pmatrix} 3 \\ 3 \end{pmatrix}.
+</span></p>
+<p>The reduced matrix <span class="math inline">\tilde{Q}</span> is still indefinite (<span class="math inline">\det \tilde{Q} = -3.25</span>), confirming the nonconvexity is genuine.</p>
+<p><strong>Certification.</strong> We need a curvature parameter <span class="math inline">\kappa \geq 0</span> such that <span class="math inline">M(x) = \tilde{Q} + \kappa \cdot \text{diag}(\tilde{Q}x + \tilde{q}) \preceq 0</span> everywhere on the reduced simplex. Since <span class="math inline">M(x)</span> is affine in <span class="math inline">x</span> and <span class="math inline">\lambda_{\min}</span> is concave, it suffices to check the three vertices. At <span class="math inline">\kappa = 0.63</span>:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: center;">Vertex <span class="math inline">v</span></th>
+<th style="text-align: center;">Gradient <span class="math inline">g(v) = \tilde{Q}v + \tilde{q}</span></th>
+<th style="text-align: center;"><span class="math inline">\det M(v)</span></th>
+<th style="text-align: center;"><span class="math inline">\text{tr}\, M(v)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;"><span class="math inline">(1,0)</span></td>
+<td style="text-align: center;"><span class="math inline">(5,\; 1.5)</span></td>
+<td style="text-align: center;"><span class="math inline">0.04</span></td>
+<td style="text-align: center;"><span class="math inline">5.59</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;"><span class="math inline">(0,1)</span></td>
+<td style="text-align: center;"><span class="math inline">(1.5,\; 2.5)</span></td>
+<td style="text-align: center;"><span class="math inline">0.92</span></td>
+<td style="text-align: center;"><span class="math inline">4.02</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;"><span class="math inline">(0,0)</span></td>
+<td style="text-align: center;"><span class="math inline">(3,\; 3)</span></td>
+<td style="text-align: center;"><span class="math inline">3.16</span></td>
+<td style="text-align: center;"><span class="math inline">5.28</span></td>
+</tr>
+</tbody>
+</table>
+<p>Every <span class="math inline">2 \times 2</span> matrix <span class="math inline">M(v)</span> has positive determinant and positive trace, so both eigenvalues are positive — <span class="math inline">M(v) \succ 0</span> at every vertex. By concavity, <span class="math inline">M(x) \succ 0</span> on the entire simplex.</p>
+<p><strong>Result.</strong> Despite the indefinite congestion matrix, the welfare-maximizing traffic split — the routing equilibrium that minimizes total system delay — is computable in polynomial time. After reparameterization with <span class="math inline">\kappa = 0.63</span> (concretely: <span class="math inline">y_i = e^{0.63\, z_i}</span>), the problem becomes concave and any projected gradient method finds the global optimum. The tractability is invisible to methods that look at <span class="math inline">Q</span> alone; it emerges from the joint structure of <span class="math inline">(Q, q)</span> — specifically, from the fact that the routes’ intrinsic quality differences (<span class="math inline">q</span>) dominate the cross-route congestion effects (<span class="math inline">\tilde{Q}_{ij}</span>).</p>
+</section>
 <section id="numerical-evidence" class="level3">
 <h3 class="anchored" data-anchor-id="numerical-evidence">Numerical evidence</h3>
 <p>On 500 random indefinite quadratic potential games (<span class="math inline">n = 4</span>, <span class="math inline">q \sim 3\mathcal{N}(0,I)</span>):</p>
