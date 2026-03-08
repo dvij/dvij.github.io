@@ -1,6 +1,6 @@
 ---
 title: "Convexification of Simplex-Constrained QPs, with an Application to Potential Games"
-description: "Optimizing an indefinite quadratic over the simplex is NP-hard. But a componentwise change of variables can render the objective convex, and whether it works is checkable by a small SDP with n+1 constraints. We characterize the tractable class and apply it to welfare maximization in potential games."
+description: "Optimizing an indefinite quadratic over the simplex is NP-hard. But a componentwise change of variables can render both the objective and the constraint convex, and whether it works is checkable by a small SDP with n+1 constraints."
 date: 2026-03-06
 author: "Dj"
 categories: [optimization, theory, game-theory, semidefinite-programming]
@@ -10,17 +10,17 @@ toc-depth: 3
 
 ## The problem
 
-Consider the quadratic program on the simplex:
+Consider the quadratic program on the (full-dimensional) simplex:
 
-$$\min_{x \in \Delta_n}\; V(x) = \tfrac{1}{2}\, x^\top Q\, x + q^\top x$$
+$$\min_{x \in \Delta}\; V(x) = \tfrac{1}{2}\, x^\top Q\, x + q^\top x, \qquad \Delta = \{x \in \mathbb{R}^n : x \geq 0,\; \mathbf{1}^\top x \leq 1\}.$$
 
-where $Q \in \mathbb{R}^{n \times n}$ is symmetric and $\Delta_n = \{x \geq 0 : \mathbf{1}^\top x = 1\}$.
+Here $Q \in \mathbb{R}^{n \times n}$ is symmetric and $\Delta$ has $n+1$ vertices: the origin and the $n$ standard basis vectors.
 
 - If $Q \succeq 0$, $V$ is **convex** — gradient descent finds the global minimum.
 - If $Q \preceq 0$, $V$ is **concave** — the minimum is at a vertex; check $n+1$ points.
-- If $Q$ is **indefinite**, neither approach works. The problem is NP-hard in general (Motzkin–Straus).
+- If $Q$ is **indefinite**, neither approach works. The problem is NP-hard in general.
 
-This post describes a method that handles a large subclass of the indefinite case. A **componentwise change of variables** $x_i = s_i(y_i)$ can render $V$ convex in the new coordinates, and whether such a change exists is checkable by a semidefinite program with only $n+1$ constraints. When it succeeds, **both the objective and the constraint become convex** — a standard convex program.
+This post describes a method that handles a large subclass of the indefinite case. A **componentwise change of variables** $x_i = s_i(y_i)$ can render both the objective and the constraint convex, and whether such a change exists is checkable by a semidefinite program with only $n+1$ constraints.
 
 ---
 
@@ -38,19 +38,19 @@ where $S' = \text{diag}(s_1', \ldots, s_n')$ is positive and:
 
 $$M(x) = Q + \text{diag}\!\big(\kappa \circ \nabla V(x)\big), \qquad \nabla V(x) = Qx + q.$$
 
-Since $S' \succ 0$, convexity of $V(s(y))$ is equivalent to $M(x) \succeq 0$ for all $x \in \Delta_n$.
+Since $S' \succ 0$, convexity of $V(s(y))$ is equivalent to $M(x) \succeq 0$ for all $x \in \Delta$.
 
 ### Both objective and constraint become convex
 
 For convex maps $s_i$ (the case $\kappa_i > 0$):
 
 - **Objective**: $V(s(y))$ is convex (by the PSD condition on $M$).
-- **Constraint**: since $s_i$ are nonneg-valued ($s_i(0) = 0$, $s_i$ increasing), the original simplex constraint $x_i \geq 0$ is automatic. The remaining constraint $\sum_i x_i \leq 1$ becomes $\sum_i s_i(y_i) \leq 1$ — the sublevel set of a convex function, hence **convex**.
+- **Constraint**: since $s_i$ are nonneg-valued ($s_i(0) = 0$, $s_i$ increasing), $x_i \geq 0$ is automatic. The remaining constraint $\sum_i x_i \leq 1$ becomes $\sum_i s_i(y_i) \leq 1$ — the sublevel set of a convex function, hence **convex**.
 
 The full reparameterized problem is: **minimize a convex function over a convex set** — solvable in polynomial time by projected gradient descent.
 
 ::: {.callout-note}
-**Maximization for free.** Convexification also solves $\max V$ on $\Delta_n$: a convex function attains its maximum at a vertex of a polytope, so we just evaluate $V$ at the $n+1$ vertices. The same certificate handles both directions.
+**Maximization for free.** Convexification also solves $\max V$ on $\Delta$: a convex function attains its maximum at a vertex of a polytope, so we just evaluate $V$ at the $n+1$ vertices. The same certificate handles both directions.
 :::
 
 ### Reducing to a finite check
@@ -60,11 +60,11 @@ Two key facts:
 1. $M(x)$ is **affine in $x$** (because $\nabla V$ is), hence **matrix-concave**.
 2. A matrix-concave function on a polytope attains its minimum eigenvalue at a vertex.
 
-The simplex $\Delta_n$ has $n + 1$ vertices. So checking $M(x) \succeq 0$ everywhere reduces to:
+$\Delta$ has $n + 1$ vertices. So checking $M(x) \succeq 0$ everywhere reduces to:
 
 $$\text{find}\; \kappa \;\;\text{s.t.}\;\; M(v_k) \succeq 0, \quad k = 0, 1, \ldots, n \tag{SDP}$$
 
-This is a semidefinite program with $n+1$ matrix constraints of size $n \\times n$ — polynomial time.
+This is a semidefinite program with $n+1$ matrix constraints of size $n \times n$ — polynomial time.
 
 ::: {.callout-note}
 **Why the simplex matters.** On a box $[0,1]^n$, the same argument requires $2^n$ vertex checks. The simplex has only $n+1$.
@@ -80,23 +80,22 @@ The **tractable class** $\mathcal{T}$ is the set of $(Q, q)$ pairs for which the
 
 - **Convex** in $(Q, q)$ space — membership is efficiently testable.
 - **Grows with $\|q\|$** — as the linear term dominates, more problems become certifiable.
-- **Excludes the provably hard cases** — $q = 0$ gives the pure homogeneous QP on $\Delta_n$, which encodes max clique. These are never certifiable.
 
 ### Limits
 
-**A necessary condition.** Reparameterization is a diffeomorphism — it preserves critical points and their Morse index (Milnor 1963, Lemma 2.2), hence the number of local optima. So the method can **only** succeed when the original QP has a unique local optimum on $\Delta_n$. Any instance with genuinely multiple local optima cannot be convexified by any smooth componentwise change of variables.
+**A necessary condition.** Reparameterization is a diffeomorphism — it preserves critical points and their Morse index (Milnor 1963, Lemma 2.2), hence the number of local optima. So the method can **only** succeed when the original QP has a unique local optimum on $\Delta$. Any instance with genuinely multiple local optima cannot be convexified by any smooth componentwise change of variables.
 
-**The inclusion chain.** Let $\mathcal{U}$ denote the set of indefinite $(Q, q)$ for which $V$ has a unique local minimum on $\Delta_n$. Then:
+**The inclusion chain.** Let $\mathcal{U}$ denote the set of $(Q, q)$ for which $V$ has a unique local minimum on $\Delta$. Then:
 
-$$\{Q \succeq 0\} \;\subset\; \mathcal{T} \;\subset\; \mathcal{U} \;\subset\; \{\text{all QPs on } \Delta_n\}.$$
+$$\{Q \succeq 0\} \;\subset\; \mathcal{T} \;\subset\; \mathcal{U} \;\subset\; \{\text{all QPs on } \Delta\}.$$
 
-Both inclusions are strict. The first is clear: PSD $Q$ needs no reparameterization. The second follows from the diffeomorphism argument. What makes $\mathcal{T}$ useful is the *complexity gap* between the two sets:
+Both inclusions are strict. What makes $\mathcal{T}$ useful is the *complexity gap* between the two sets:
 
-- **Testing $\mathcal{U}$** requires verifying that no other KKT point exists on any of the $2^n - 1$ nonempty faces of $\Delta_n$ — exponential time.
+- **Testing $\mathcal{U}$** requires verifying that no other KKT point exists on any of the $2^n - 1$ nonempty faces of $\Delta$ — exponential time.
 - **Testing $\mathcal{T}$** is a semidefinite program with $n + 1$ constraints — polynomial time.
 - **$\mathcal{T}$ is convex** in $(Q, q)$ space; $\mathcal{U}$ is not.
 
-So $\mathcal{T}$ is a **tractable, convex inner approximation** of $\mathcal{U}$. The role of $q$ is to control the approximation quality: as $\|q\| \to \infty$ relative to $\|Q\|$, the problem has a unique local optimum (driven by the linear term) and $\mathcal{T}$ captures it. As $\|q\| \to 0$, multiple local optima proliferate and $\mathcal{T}$ correctly excludes these. The boundary $q = 0$ gives the pure homogeneous QP, which encodes max clique and is never certifiable.
+So $\mathcal{T}$ is a **tractable, convex inner approximation** of $\mathcal{U}$. The role of $q$ is to control the approximation quality: as $\|q\| \to \infty$ relative to $\|Q\|$, the problem has a unique local optimum (driven by the linear term) and $\mathcal{T}$ captures it. As $\|q\| \to 0$, multiple local optima proliferate and $\mathcal{T}$ correctly excludes these.
 
 ---
 
@@ -104,49 +103,43 @@ So $\mathcal{T}$ is a **tractable, convex inner approximation** of $\mathcal{U}$
 
 ### Background
 
-A **potential game** has a scalar function $V(x)$ whose stationary points on $\Delta_n$ are exactly the Nash equilibria. When $V$ is quadratic, welfare optimization is a simplex-constrained QP.
+A **potential game** on $n+1$ strategies has a potential $V(x)$ on the population simplex $\{x \geq 0, \sum x_i = 1\} \subset \mathbb{R}^{n+1}$. After eliminating one coordinate ($x_{n+1} = 1 - \sum_{i=1}^n x_i$), the reduced potential is a QP on $\Delta = \{x \geq 0, \mathbf{1}^\top x \leq 1\} \subset \mathbb{R}^n$ — exactly the setup above.
 
-In congestion games, higher $V$ means higher welfare (lower system delay). The **socially optimal** equilibrium maximizes $V$ — an NP-hard problem in general (Conitzer & Sandholm 2003, even inapproximable).
-
-For convexifiable $(Q, q) \in \mathcal{T}$: since a convex function on a polytope attains its maximum at a vertex, the welfare-maximizing equilibrium is found by evaluating $V$ at the $n+1$ pure strategies.
+Higher $V$ means higher welfare. The **socially optimal** equilibrium maximizes $V$ — NP-hard in general (Conitzer & Sandholm 2003). For $(Q, q) \in \mathcal{T}$: since $V$ is convexifiable, its maximum is at one of the $n+1$ vertices.
 
 ### Example 1: traffic routing
 
-A unit mass of commuters splits among $n = 3$ routes.
-
-| Route | Description | Free-flow time | Key feature |
-|:---:|---|:---:|---|
-| 1 — Highway | Through city center | 25 min | Fast but bottleneck-prone |
-| 2 — Bypass | Six-lane ring road | 32 min | High capacity, long |
-| 3 — Local | Two-lane suburban road | 28 min | Moderate; merges with both others |
+A unit mass of commuters splits among $n+1 = 3$ routes. After eliminating route 3, the reduced QP on $\Delta \subset \mathbb{R}^2$ has:
 
 $$
-Q = \begin{pmatrix} 2 & -1 & 0.5 \\ -1 & 0.5 & 1 \\ 0.5 & 1 & 1 \end{pmatrix}, \qquad q = \begin{pmatrix} 4.5 \\ 4 \\ 1 \end{pmatrix}.
+\tilde{Q} = \begin{pmatrix} 2 & -1.5 \\ -1.5 & -0.5 \end{pmatrix}, \qquad \tilde{q} = \begin{pmatrix} 3 \\ 3 \end{pmatrix}.
 $$
 
-$Q$ is indefinite (eigenvalues $\approx +2.73, +0.54, -0.77$). The reduced $\tilde{Q}$ has $\det = -3.25$.
+$\tilde{Q}$ is indefinite ($\det = -3.25$). The three vertices of $\Delta$ are $(0,0)$, $(1,0)$, $(0,1)$, corresponding to "all on route 3", "all on route 1", "all on route 2".
 
-**Certification.** With $\kappa = 0.63$, $M(v) \succ 0$ at all three reduced-simplex vertices (positive trace and determinant at each). The reparameterized $V$ is convex.
+**Certification.** With $\kappa = 0.63$, $M(v) \succ 0$ at all three vertices (positive trace and determinant at each).
 
-**Result.** Since $V$ is convex on $\Delta_3$, the maximum is at a vertex. Evaluating:
+**Result.** Since $V$ is convex on $\Delta$, the maximum is at a vertex:
 
-$$V(1,0,0) = 5.5, \quad V(0,1,0) = 4.25, \quad V(0,0,1) = 1.5.$$
+$$\tilde{V}(1,0) = 5.5, \qquad \tilde{V}(0,1) = 4.25, \qquad \tilde{V}(0,0) = 1.5.$$
 
-The welfare-maximizing equilibrium is $x^* = (1,0,0)$ with $V = 5.5$ — all commuters on the highway, the route with the best intrinsic quality ($q_1 = 4.5$). The certificate guarantees this is the global maximum. (See [`verify_routing_game.py`](file:///usr/local/google/home/dvij/verify_routing_game.py).)
+The welfare-maximizing equilibrium sends all commuters on route 1 (highway), the route with the best intrinsic quality. The certificate guarantees this is the global maximum. (See [`verify_routing_game.py`](file:///usr/local/google/home/dvij/verify_routing_game.py).)
 
 ### Example 2: platform adoption (mixed optimum via concavification)
 
-Not all games are convexifiable. Some admit **concavification** instead — replacing $M \succeq 0$ with $M \preceq 0$ using $\kappa < 0$, which makes $V \circ s$ concave. This certifies a unique global maximum directly, which need not be at a vertex.
+Not all games are convexifiable. Some admit **concavification** instead — $M \preceq 0$ with $\kappa < 0$, making $V \circ s$ concave. This certifies a unique global maximum directly, which need not be at a vertex.
+
+The reduced QP for a platform adoption game has:
 
 $$
-Q = \begin{pmatrix} -3 & 3.5 & 0.5 \\ 3.5 & 3.5 & 3 \\ 0.5 & 3 & 2 \end{pmatrix}, \qquad q = \begin{pmatrix} 17 \\ 14 \\ 12 \end{pmatrix}.
+\tilde{Q} = \begin{pmatrix} -2 & 2 \\ 2 & -0.5 \end{pmatrix}, \qquad \tilde{q} = \begin{pmatrix} 3.5 \\ 3 \end{pmatrix}.
 $$
 
-Platforms 1 and 2 are **synergistic** ($Q_{12} = 3.5$) — adopting both creates positive network effects. The reduced matrix is indefinite ($\det \tilde{Q} = -3$). This game is NOT convexifiable (the PSD check fails for all $\kappa > 0$), but it IS **concavifiable** with $\kappa = -0.3$.
+$\tilde{Q}$ is indefinite ($\det = -3$). This game is NOT convexifiable (the PSD check fails for all $\kappa > 0$), but it IS **concavifiable** with $\kappa = -0.3$.
 
-$$x^* \approx (0.46,\; 0.54,\; 0), \qquad V(x^*) = 16.44.$$
+$$x^* \approx (0.46,\; 0.54), \qquad V(x^*) = 16.44.$$
 
-Users split between the two synergistic platforms. This mixed equilibrium is not at any vertex — convexification would miss it entirely. The concavification certificate guarantees it is the unique global maximum.
+Users split between two synergistic platforms. This equilibrium is in the interior of $\Delta$ — convexification would miss it. The concavification certificate guarantees it is the unique global maximum.
 
 ### Numerical evidence
 
@@ -171,7 +164,7 @@ In potential games, learning dynamics (replicator, gradient play) converge to *s
 
 ## Open questions
 
-**A diagonal dominance sufficient condition.** A simpler sufficient condition for $M(x) \succeq 0$ comes from diagonal dominance: $\kappa_i \cdot g_i(x) + Q_{ii} \geq \sum_{j \neq i} |Q_{ij}|$ at all vertices. This is the "linear term dominates interactions" intuition. Is there a scaled version (à la Geršgorin) that is tight?
+**A diagonal dominance sufficient condition.** A simpler sufficient condition for $M(x) \succeq 0$ comes from diagonal dominance: $\kappa_i \cdot g_i(x) + Q_{ii} \geq \sum_{j \neq i} |Q_{ij}|$ at all vertices. Is there a scaled version (à la Geršgorin) that is tight?
 
 **Richer reparameterizations.** Constant-curvature maps give $M(x)$ affine — hence matrix-concave, enabling the vertex trick. The natural generalization $\kappa_i(x_i)$ makes $M_{ii}$ quadratic with indefinite Hessian, destroying matrix-concavity. Can a different parameterization extend the tractable class?
 
