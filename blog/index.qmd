@@ -10,7 +10,7 @@ toc-depth: 3
 
 ## The problem: which equilibrium is best?
 
-A **potential game** has a scalar function $V(x)$ — the *potential* — whose stationary points on the simplex $\Delta_n$ are exactly the Nash equilibria. In congestion games, $V$ captures route quality: Nash equilibria are traffic patterns where no commuter wants to switch routes, and the **socially optimal** equilibrium is the one that maximizes $V$.
+A **potential game** has a scalar function $V(x)$ — the *potential* — whose stationary points on the simplex $\Delta_n$ are exactly the Nash equilibria. Potential games arise naturally in several contexts, including modeling traffic congestion and evolutionary game theory. In congestion games, $V$ captures route quality: Nash equilibria are traffic patterns where no commuter wants to switch routes, and the **socially optimal** equilibrium is the one that maximizes $V$.
 
 When $V$ is concave, maximization is easy — gradient ascent finds the unique global maximum. When $V$ is convex, the maximum is always at a vertex and we just check $n+1$ points. But generically $V$ is **indefinite**: neither convex nor concave. Multiple equilibria coexist with very different welfare, and finding the best one requires searching the entire simplex — exponentially many faces.
 
