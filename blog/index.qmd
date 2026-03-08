@@ -76,30 +76,27 @@ This is a semidefinite program with $n+1$ matrix constraints of size $n \\times 
 
 ## The tractable class
 
-### Definition
-
 The **tractable class** $\mathcal{T}$ is the set of $(Q, q)$ pairs for which the SDP is feasible.
 
 - **Convex** in $(Q, q)$ space — membership is efficiently testable.
 - **Grows with $\|q\|$** — as the linear term dominates, more problems become certifiable.
 - **Excludes the provably hard cases** — $q = 0$ gives the pure homogeneous QP on $\Delta_n$, which encodes max clique. These are never certifiable.
 
-### The pipeline
-
-For any $(Q, q) \in \mathcal{T}$:
-
-1. **Certify** (poly time): solve the SDP to find curvature parameters $\kappa > 0$.
-2. **Solve min** (poly time): minimize the now-convex $V(s(y))$ over the convex set $\{y \geq 0, \sum s_i(y_i) \leq 1\}$.
-3. **Solve max** (constant time): evaluate $V$ at the $n+1$ vertices of $\Delta_n$.
-4. **Recover**: $x^* = s(y^*)$ is the global minimizer.
-
 ### Limits
 
-The method cannot certify every indefinite QP — only those where $q$ is large enough relative to $Q$'s indefiniteness.
+**A necessary condition.** Reparameterization is a diffeomorphism — it preserves critical points and their Morse index (Milnor 1963, Lemma 2.2), hence the number of local optima. So the method can **only** succeed when the original QP has a unique local optimum on $\Delta_n$. Any instance with genuinely multiple local optima cannot be convexified by any smooth componentwise change of variables.
 
-**The boundary.** As $\|q\| \to 0$, the diagonal boost $\kappa \circ \nabla V(x)$ vanishes and $M(x) \to Q$, which is indefinite. As $\|q\| \to \infty$, gradients grow, providing a uniformly large diagonal correction.
+**The inclusion chain.** Let $\mathcal{U}$ denote the set of indefinite $(Q, q)$ for which $V$ has a unique local minimum on $\Delta_n$. Then:
 
-**What remains hard.** Pure interaction problems ($q = 0$), problems where interactions dominate ($\|q\| \ll \|Q\|$), and strongly conflicting off-diagonal structure.
+$$\{Q \succeq 0\} \;\subset\; \mathcal{T} \;\subset\; \mathcal{U} \;\subset\; \{\text{all QPs on } \Delta_n\}.$$
+
+Both inclusions are strict. The first is clear: PSD $Q$ needs no reparameterization. The second follows from the diffeomorphism argument. What makes $\mathcal{T}$ useful is the *complexity gap* between the two sets:
+
+- **Testing $\mathcal{U}$** requires verifying that no other KKT point exists on any of the $2^n - 1$ nonempty faces of $\Delta_n$ — exponential time.
+- **Testing $\mathcal{T}$** is a semidefinite program with $n + 1$ constraints — polynomial time.
+- **$\mathcal{T}$ is convex** in $(Q, q)$ space; $\mathcal{U}$ is not.
+
+So $\mathcal{T}$ is a **tractable, convex inner approximation** of $\mathcal{U}$. The role of $q$ is to control the approximation quality: as $\|q\| \to \infty$ relative to $\|Q\|$, the problem has a unique local optimum (driven by the linear term) and $\mathcal{T}$ captures it. As $\|q\| \to 0$, multiple local optima proliferate and $\mathcal{T}$ correctly excludes these. The boundary $q = 0$ gives the pure homogeneous QP, which encodes max clique and is never certifiable.
 
 ---
 
@@ -189,3 +186,4 @@ In potential games, learning dynamics (replicator, gradient play) converge to *s
 - Conitzer, V. & Sandholm, T. (2003). Complexity results about Nash equilibria. *IJCAI*, 765–771.
 - Bomze, I.M. (1998). On standard quadratic optimization problems. *Journal of Global Optimization* 13(4), 369–387.
 - Burer, S. & Ye, Y. (2020). Exactness of Parrilo's conic approximations for copositive programs. *Mathematics of Operations Research* 45(1), 265–290.
+- Milnor, J. (1963). *Morse Theory.* Annals of Mathematics Studies 51, Princeton University Press.
