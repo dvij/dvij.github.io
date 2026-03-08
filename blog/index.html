@@ -441,9 +441,9 @@ window.Quarto = {
 <p>For convex maps <span class="math inline">s_i</span> (the case <span class="math inline">\kappa_i &gt; 0</span>):</p>
 <ul>
 <li><strong>Objective</strong>: <span class="math inline">V(s(y))</span> is convex (by the PSD condition on <span class="math inline">M</span>).</li>
-<li><strong>Constraint</strong>: the reparameterized feasible set is <span class="math inline">\{y \geq 0 : \sum_i s_i(y_i) \leq 1\}</span> — the sublevel set of the convex function <span class="math inline">\sum s_i</span>. This is a <strong>convex set</strong>.</li>
+<li><strong>Constraint</strong>: since <span class="math inline">s_i</span> are nonneg-valued (<span class="math inline">s_i(0) = 0</span>, <span class="math inline">s_i</span> increasing), the original simplex constraint <span class="math inline">x_i \geq 0</span> is automatic. The remaining constraint <span class="math inline">\sum_i x_i \leq 1</span> becomes <span class="math inline">\sum_i s_i(y_i) \leq 1</span> — the sublevel set of a convex function, hence <strong>convex</strong>.</li>
 </ul>
-<p>The full reparameterized problem is therefore: <strong>minimize a convex function over a convex set</strong> — solvable in polynomial time by projected gradient descent.</p>
+<p>The full reparameterized problem is: <strong>minimize a convex function over a convex set</strong> — solvable in polynomial time by projected gradient descent.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
