@@ -8,9 +8,9 @@
 
 <meta name="author" content="Dj">
 <meta name="dcterms.date" content="2026-03-06">
-<meta name="description" content="Optimizing over Nash equilibria is NP-hard — even inapproximable — for general potential games. But a componentwise change of variables can make the potential concave, and whether it works is checkable by a small SDP. We work through a concrete traffic routing game where every number has a physical meaning.">
+<meta name="description" content="Optimizing an indefinite quadratic over the simplex is NP-hard. But a componentwise change of variables can render the objective concave, and whether it works is checkable by a small SDP with n+1 constraints. We characterize the tractable class and apply it to welfare maximization in potential games.">
 
-<title>Convexifying Nonconvex Games: Finding the Best Equilibrium in Polynomial Time – Dj’s Blog</title>
+<title>Convexification of Simplex-Constrained QPs, with an Application to Potential Games – Dj’s Blog</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -340,32 +340,24 @@ window.Quarto = {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#the-problem-which-equilibrium-is-best" id="toc-the-problem-which-equilibrium-is-best" class="nav-link active" data-scroll-target="#the-problem-which-equilibrium-is-best">The problem: which equilibrium is best?</a></li>
-  <li><a href="#a-worked-example-morning-commute" id="toc-a-worked-example-morning-commute" class="nav-link" data-scroll-target="#a-worked-example-morning-commute">A worked example: morning commute</a>
+  <li><a href="#the-problem" id="toc-the-problem" class="nav-link active" data-scroll-target="#the-problem">The problem</a></li>
+  <li><a href="#the-reparameterization" id="toc-the-reparameterization" class="nav-link" data-scroll-target="#the-reparameterization">The reparameterization</a>
   <ul class="collapse">
-  <li><a href="#setup" id="toc-setup" class="nav-link" data-scroll-target="#setup">Setup</a></li>
-  <li><a href="#why-the-problem-is-hard" id="toc-why-the-problem-is-hard" class="nav-link" data-scroll-target="#why-the-problem-is-hard">Why the problem is hard</a></li>
-  </ul></li>
-  <li><a href="#the-reparameterization-idea" id="toc-the-reparameterization-idea" class="nav-link" data-scroll-target="#the-reparameterization-idea">The reparameterization idea</a>
-  <ul class="collapse">
+  <li><a href="#the-hessian" id="toc-the-hessian" class="nav-link" data-scroll-target="#the-hessian">The Hessian</a></li>
   <li><a href="#reducing-to-a-finite-check" id="toc-reducing-to-a-finite-check" class="nav-link" data-scroll-target="#reducing-to-a-finite-check">Reducing to a finite check</a></li>
   </ul></li>
-  <li><a href="#certifying-the-routing-game" id="toc-certifying-the-routing-game" class="nav-link" data-scroll-target="#certifying-the-routing-game">Certifying the routing game</a>
+  <li><a href="#the-tractable-class" id="toc-the-tractable-class" class="nav-link" data-scroll-target="#the-tractable-class">The tractable class</a>
   <ul class="collapse">
-  <li><a href="#the-check" id="toc-the-check" class="nav-link" data-scroll-target="#the-check">The check</a></li>
-  <li><a href="#the-tightest-constraint" id="toc-the-tightest-constraint" class="nav-link" data-scroll-target="#the-tightest-constraint">The tightest constraint</a></li>
-  <li><a href="#the-global-optimum" id="toc-the-global-optimum" class="nav-link" data-scroll-target="#the-global-optimum">The global optimum</a></li>
-  </ul></li>
-  <li><a href="#a-non-vertex-optimum-platform-adoption" id="toc-a-non-vertex-optimum-platform-adoption" class="nav-link" data-scroll-target="#a-non-vertex-optimum-platform-adoption">A non-vertex optimum: platform adoption</a>
-  <ul class="collapse">
-  <li><a href="#certification" id="toc-certification" class="nav-link" data-scroll-target="#certification">Certification</a></li>
-  <li><a href="#the-optimum" id="toc-the-optimum" class="nav-link" data-scroll-target="#the-optimum">The optimum</a></li>
-  </ul></li>
-  <li><a href="#the-bigger-picture" id="toc-the-bigger-picture" class="nav-link" data-scroll-target="#the-bigger-picture">The bigger picture</a>
-  <ul class="collapse">
-  <li><a href="#the-tractable-class" id="toc-the-tractable-class" class="nav-link" data-scroll-target="#the-tractable-class">The tractable class</a></li>
+  <li><a href="#definition" id="toc-definition" class="nav-link" data-scroll-target="#definition">Definition</a></li>
   <li><a href="#the-pipeline" id="toc-the-pipeline" class="nav-link" data-scroll-target="#the-pipeline">The pipeline</a></li>
-  <li><a href="#how-large-is-the-tractable-class" id="toc-how-large-is-the-tractable-class" class="nav-link" data-scroll-target="#how-large-is-the-tractable-class">How large is the tractable class?</a></li>
+  <li><a href="#limits" id="toc-limits" class="nav-link" data-scroll-target="#limits">Limits</a></li>
+  </ul></li>
+  <li><a href="#application-welfare-maximization-in-potential-games" id="toc-application-welfare-maximization-in-potential-games" class="nav-link" data-scroll-target="#application-welfare-maximization-in-potential-games">Application: welfare maximization in potential games</a>
+  <ul class="collapse">
+  <li><a href="#background" id="toc-background" class="nav-link" data-scroll-target="#background">Background</a></li>
+  <li><a href="#example-1-traffic-routing-vertex-optimum" id="toc-example-1-traffic-routing-vertex-optimum" class="nav-link" data-scroll-target="#example-1-traffic-routing-vertex-optimum">Example 1: traffic routing (vertex optimum)</a></li>
+  <li><a href="#example-2-platform-adoption-mixed-optimum" id="toc-example-2-platform-adoption-mixed-optimum" class="nav-link" data-scroll-target="#example-2-platform-adoption-mixed-optimum">Example 2: platform adoption (mixed optimum)</a></li>
+  <li><a href="#numerical-evidence" id="toc-numerical-evidence" class="nav-link" data-scroll-target="#numerical-evidence">Numerical evidence</a></li>
   <li><a href="#dynamics" id="toc-dynamics" class="nav-link" data-scroll-target="#dynamics">Dynamics</a></li>
   </ul></li>
   <li><a href="#open-questions" id="toc-open-questions" class="nav-link" data-scroll-target="#open-questions">Open questions</a></li>
@@ -379,7 +371,7 @@ window.Quarto = {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Convexifying Nonconvex Games: Finding the Best Equilibrium in Polynomial Time</h1>
+<h1 class="title">Convexification of Simplex-Constrained QPs, with an Application to Potential Games</h1>
   <div class="quarto-categories">
     <div class="quarto-category">optimization</div>
     <div class="quarto-category">theory</div>
@@ -390,7 +382,7 @@ window.Quarto = {
 
 <div>
   <div class="description">
-    Optimizing over Nash equilibria is NP-hard — even inapproximable — for general potential games. But a componentwise change of variables can make the potential concave, and whether it works is checkable by a small SDP. We work through a concrete traffic routing game where every number has a physical meaning.
+    Optimizing an indefinite quadratic over the simplex is NP-hard. But a componentwise change of variables can render the objective concave, and whether it works is checkable by a small SDP with n+1 constraints. We characterize the tractable class and apply it to welfare maximization in potential games.
   </div>
 </div>
 
@@ -419,19 +411,95 @@ window.Quarto = {
 </header>
 
 
-<section id="the-problem-which-equilibrium-is-best" class="level2">
-<h2 class="anchored" data-anchor-id="the-problem-which-equilibrium-is-best">The problem: which equilibrium is best?</h2>
-<p>A <strong>potential game</strong> has a scalar function <span class="math inline">V(x)</span> — the <em>potential</em> — whose stationary points on the simplex <span class="math inline">\Delta_n</span> are exactly the Nash equilibria. Potential games arise naturally in several contexts, including modeling traffic congestion and evolutionary game theory. In congestion games, <span class="math inline">V</span> captures route quality: Nash equilibria are traffic patterns where no commuter wants to switch routes, and the <strong>socially optimal</strong> equilibrium is the one that maximizes <span class="math inline">V</span>.</p>
-<p>When <span class="math inline">V</span> is concave, maximization is easy — gradient ascent finds the unique global maximum. When <span class="math inline">V</span> is convex, the maximum is always at a vertex and we just check <span class="math inline">n+1</span> points. But generically <span class="math inline">V</span> is <strong>indefinite</strong>: neither convex nor concave. Multiple equilibria coexist with very different welfare, and finding the best one requires searching the entire simplex — exponentially many faces.</p>
-<p><strong>The question</strong>: find the Nash equilibrium that maximizes welfare — the global maximum of <span class="math inline">V</span> on <span class="math inline">\Delta_n</span>.</p>
-<p>This is NP-hard. Conitzer &amp; Sandholm (2003) showed it is even <em>inapproximable</em>: no polynomial-time algorithm can guarantee any constant fraction of optimal welfare, unless P = NP.</p>
-<p>This post describes a way around the hardness for a large natural subclass. A <strong>componentwise change of variables</strong> <span class="math inline">x_i = s_i(y_i)</span> can make <span class="math inline">V</span> globally <strong>concave</strong> in <span class="math inline">y</span>, turning the indefinite problem into a concave maximization. Whether such a change exists is checkable by a small SDP with just <span class="math inline">n+1</span> constraints. When it does, the welfare-maximizing equilibrium is computable in polynomial time.</p>
+<section id="the-problem" class="level2">
+<h2 class="anchored" data-anchor-id="the-problem">The problem</h2>
+<p>Consider the quadratic program on the simplex:</p>
+<p><span class="math display">\max_{x \in \Delta_n}\; V(x) = \tfrac{1}{2}\, x^\top Q\, x + q^\top x</span></p>
+<p>where <span class="math inline">Q \in \mathbb{R}^{n \times n}</span> is symmetric and <span class="math inline">\Delta_n = \{x \geq 0 : \mathbf{1}^\top x = 1\}</span>.</p>
+<ul>
+<li>If <span class="math inline">Q \preceq 0</span> (negative semidefinite), <span class="math inline">V</span> is <strong>concave</strong> — gradient ascent finds the global maximum.</li>
+<li>If <span class="math inline">Q \succeq 0</span> (positive semidefinite), <span class="math inline">V</span> is <strong>convex</strong> — the maximum is at a vertex; check <span class="math inline">n+1</span> points.</li>
+<li>If <span class="math inline">Q</span> is <strong>indefinite</strong>, neither approach works. The problem is NP-hard in general (Motzkin–Straus: max clique reduces to <span class="math inline">\max x^\top Q x</span> on <span class="math inline">\Delta_n</span>).</li>
+</ul>
+<p>This post describes a method that handles a large subclass of the indefinite case. A <strong>componentwise change of variables</strong> <span class="math inline">x_i = s_i(y_i)</span> can render <span class="math inline">V</span> concave in the new coordinates, and whether such a change exists is checkable by a semidefinite program with only <span class="math inline">n+1</span> constraints.</p>
 <hr>
 </section>
-<section id="a-worked-example-morning-commute" class="level2">
-<h2 class="anchored" data-anchor-id="a-worked-example-morning-commute">A worked example: morning commute</h2>
-<section id="setup" class="level3">
-<h3 class="anchored" data-anchor-id="setup">Setup</h3>
+<section id="the-reparameterization" class="level2">
+<h2 class="anchored" data-anchor-id="the-reparameterization">The reparameterization</h2>
+<p>We ask: <strong>is there a smooth, componentwise map <span class="math inline">x_i = s_i(y_i)</span> that makes <span class="math inline">V(s(y))</span> concave in <span class="math inline">y</span>?</strong></p>
+<p>If yes, then <span class="math inline">\max_y V(s(y))</span> is a concave maximization — solvable in polynomial time. The optimizer <span class="math inline">x^* = s(y^*)</span> is the global maximum of <span class="math inline">V</span> on <span class="math inline">\Delta_n</span>.</p>
+<section id="the-hessian" class="level3">
+<h3 class="anchored" data-anchor-id="the-hessian">The Hessian</h3>
+<p>For maps <span class="math inline">s_i</span> with constant curvature <span class="math inline">\kappa_i = s_i''/(s_i')^2</span>, the Hessian of <span class="math inline">V(s(y))</span> factors as:</p>
+<p><span class="math display">H(y) = S'(y) \cdot M(x) \cdot S'(y)</span></p>
+<p>where <span class="math inline">S' = \text{diag}(s_1', \ldots, s_n')</span> is positive and:</p>
+<p><span class="math display">M(x) = Q + \text{diag}\!\big(\kappa \circ \nabla V(x)\big), \qquad \nabla V(x) = Qx + q.</span></p>
+<p>Since <span class="math inline">S' \succ 0</span>, concavity of <span class="math inline">V(s(y))</span> is equivalent to <span class="math inline">M(x) \preceq 0</span> for all <span class="math inline">x \in \Delta_n</span>.</p>
+</section>
+<section id="reducing-to-a-finite-check" class="level3">
+<h3 class="anchored" data-anchor-id="reducing-to-a-finite-check">Reducing to a finite check</h3>
+<p>Two key facts:</p>
+<ol type="1">
+<li><span class="math inline">M(x)</span> is <strong>affine in <span class="math inline">x</span></strong> (because <span class="math inline">\nabla V</span> is), hence <strong>matrix-concave</strong>.</li>
+<li>A matrix-concave function on a polytope attains its maximum eigenvalue at a vertex.</li>
+</ol>
+<p>The simplex <span class="math inline">\Delta_n</span> has <span class="math inline">n + 1</span> vertices. So checking <span class="math inline">M(x) \preceq 0</span> everywhere reduces to:</p>
+<p><span class="math display">\text{find}\; \kappa \;\;\text{s.t.}\;\; M(v_k) \preceq 0, \quad k = 0, 1, \ldots, n \tag{SDP}</span></p>
+<p>This is a semidefinite program with <span class="math inline">n+1</span> matrix constraints of size <span class="math inline">n \times n</span> — polynomial time.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Why the simplex matters.</strong> On a box <span class="math inline">[0,1]^n</span>, the same argument requires <span class="math inline">2^n</span> vertex checks. The simplex has only <span class="math inline">n+1</span>. The lean geometry of the feasible set is what makes the method efficient.</p>
+<p><strong>Matrix-concavity is what matters.</strong> The vertex trick does not require <span class="math inline">M(x)</span> to be affine — only matrix-concave. Since <span class="math inline">M(x)</span> modifies only the diagonal of <span class="math inline">Q</span>, matrix-concavity reduces to each diagonal entry <span class="math inline">M_{ii}(x)</span> being concave in <span class="math inline">x</span>. With constant curvature <span class="math inline">\kappa_i</span> these entries are affine (a special case), but richer reparameterizations where <span class="math inline">\kappa_i</span> depends on <span class="math inline">x_i</span> can produce concave diagonals while preserving the finite check.</p>
+</div>
+</div>
+<hr>
+</section>
+</section>
+<section id="the-tractable-class" class="level2">
+<h2 class="anchored" data-anchor-id="the-tractable-class">The tractable class</h2>
+<section id="definition" class="level3">
+<h3 class="anchored" data-anchor-id="definition">Definition</h3>
+<p>The <strong>tractable class</strong> <span class="math inline">\mathcal{T}</span> is the set of <span class="math inline">(Q, q)</span> pairs for which the SDP is feasible. It has a clean structure:</p>
+<ul>
+<li><strong>Convex</strong> in <span class="math inline">(Q, q)</span> space — membership is efficiently testable.</li>
+<li><strong>Grows with <span class="math inline">\|q\|</span></strong> — as the linear term dominates, more problems become certifiable.</li>
+<li><strong>Excludes the provably hard cases</strong> — <span class="math inline">q = 0</span> gives the pure homogeneous QP <span class="math inline">\max x^\top Q x</span> on <span class="math inline">\Delta_n</span>, which encodes max clique. These are never certifiable.</li>
+</ul>
+</section>
+<section id="the-pipeline" class="level3">
+<h3 class="anchored" data-anchor-id="the-pipeline">The pipeline</h3>
+<p>For any <span class="math inline">(Q, q) \in \mathcal{T}</span>:</p>
+<ol type="1">
+<li><strong>Certify</strong> (poly time): solve the SDP to find curvature parameters <span class="math inline">\kappa</span>.</li>
+<li><strong>Solve</strong> (poly time): maximize the now-concave <span class="math inline">V(s(y))</span> by gradient ascent.</li>
+<li><strong>Recover</strong>: <span class="math inline">x^* = s(y^*)</span> is the global maximizer.</li>
+</ol>
+</section>
+<section id="limits" class="level3">
+<h3 class="anchored" data-anchor-id="limits">Limits</h3>
+<p>The method cannot certify every indefinite QP — only those where the linear term <span class="math inline">q</span> is large enough relative to <span class="math inline">Q</span>’s indefiniteness.</p>
+<p><strong>The boundary.</strong> As <span class="math inline">\|q\| \to 0</span>, the feasible set shrinks: the diagonal boost <span class="math inline">\kappa \circ \nabla V(x)</span> vanishes, and <span class="math inline">M(x) \to Q</span>, which is indefinite by assumption. As <span class="math inline">\|q\| \to \infty</span>, the feasible set grows: <span class="math inline">\nabla V \approx q</span> at all vertices, providing a uniformly large diagonal correction.</p>
+<p><strong>What remains hard.</strong> Pure interaction games (<span class="math inline">q = 0</span>), games where interactions dominate intrinsic payoffs (<span class="math inline">\|q\| \ll \|Q\|</span>), and games with strongly conflicting off-diagonal structure that no diagonal correction can overcome.</p>
+<hr>
+</section>
+</section>
+<section id="application-welfare-maximization-in-potential-games" class="level2">
+<h2 class="anchored" data-anchor-id="application-welfare-maximization-in-potential-games">Application: welfare maximization in potential games</h2>
+<section id="background" class="level3">
+<h3 class="anchored" data-anchor-id="background">Background</h3>
+<p>A <strong>potential game</strong> has a scalar function <span class="math inline">V(x)</span> whose stationary points on <span class="math inline">\Delta_n</span> are exactly the Nash equilibria. When <span class="math inline">V</span> is quadratic, welfare maximization — finding the equilibrium with highest <span class="math inline">V</span> — is exactly the simplex-constrained QP above.</p>
+<p>This is NP-hard in general (Conitzer &amp; Sandholm 2003, even inapproximable). For <span class="math inline">(Q, q) \in \mathcal{T}</span>, the reparameterization solves it in polynomial time.</p>
+</section>
+<section id="example-1-traffic-routing-vertex-optimum" class="level3">
+<h3 class="anchored" data-anchor-id="example-1-traffic-routing-vertex-optimum">Example 1: traffic routing (vertex optimum)</h3>
 <p>A unit mass of commuters splits among <span class="math inline">n = 3</span> routes.</p>
 <table class="caption-top table">
 <colgroup>
@@ -469,198 +537,26 @@ window.Quarto = {
 </tr>
 </tbody>
 </table>
-<p>The commuter fractions <span class="math inline">x = (x_1, x_2, x_3) \in \Delta_3</span> determine welfare via the potential:</p>
-<p><span class="math display">V(x) = \tfrac{1}{2}\, x^\top Q\, x + q^\top x</span></p>
-<p>with:</p>
 <p><span class="math display">
 Q = \begin{pmatrix} 2 &amp; -1 &amp; 0.5 \\ -1 &amp; 0.5 &amp; 1 \\ 0.5 &amp; 1 &amp; 1 \end{pmatrix}, \qquad q = \begin{pmatrix} 4.5 \\ 4 \\ 1 \end{pmatrix}.
 </span></p>
-<p>The vector <span class="math inline">q</span> captures free-flow quality — each route’s payoff before any congestion. The matrix <span class="math inline">Q</span> captures pairwise congestion interactions:</p>
-<ul>
-<li><strong>Diagonal entries</strong> (<span class="math inline">Q_{11} = 2 &gt; Q_{33} = 1 &gt; Q_{22} = 0.5</span>): self-interaction strength. The highway interacts most strongly with itself (narrow bottleneck), the bypass least (wide road).</li>
-<li><strong><span class="math inline">Q_{12} = -1</span> (negative = complementary)</strong>: splitting traffic between the highway and bypass <em>relieves</em> congestion — separate corridors, no shared bottleneck.</li>
-<li><strong><span class="math inline">Q_{13} = 0.5</span>, <span class="math inline">Q_{23} = 1</span> (positive = competing for capacity)</strong>: the local road shares a merge point with both other routes, creating cross-congestion.</li>
-</ul>
-</section>
-<section id="why-the-problem-is-hard" class="level3">
-<h3 class="anchored" data-anchor-id="why-the-problem-is-hard">Why the problem is hard</h3>
-<p><span class="math inline">Q</span> is <strong>indefinite</strong>: eigenvalues <span class="math inline">\approx +2.73</span>, <span class="math inline">+0.54</span>, <span class="math inline">-0.77</span>. Since <span class="math inline">V</span> is neither convex nor concave, we cannot apply standard optimization — neither gradient ascent (no concavity guarantee) nor vertex enumeration (no convexity guarantee) solves the problem. Multiple Nash equilibria coexist, and finding the welfare-maximizing one means globally optimizing an indefinite QP on <span class="math inline">\Delta_3</span>.</p>
-<p>For <span class="math inline">n = 3</span> we could brute-force it (enumerate KKT points on all faces), but the NP-hardness means no general-purpose method works for large <span class="math inline">n</span>.</p>
-<hr>
-</section>
-</section>
-<section id="the-reparameterization-idea" class="level2">
-<h2 class="anchored" data-anchor-id="the-reparameterization-idea">The reparameterization idea</h2>
-<p>We ask: <strong>is there a componentwise change of variables <span class="math inline">x_i = s_i(y_i)</span> that makes <span class="math inline">V</span> concave in <span class="math inline">y</span>?</strong></p>
-<p>If yes: <span class="math inline">\max_y V(s(y))</span> is a concave maximization — solvable by gradient ascent. The solution maps back to <span class="math inline">x^* = s(y^*)</span>, the welfare-maximizing equilibrium.</p>
-<section id="reducing-to-a-finite-check" class="level3">
-<h3 class="anchored" data-anchor-id="reducing-to-a-finite-check">Reducing to a finite check</h3>
-<p>For maps <span class="math inline">s_i</span> with constant curvature <span class="math inline">\kappa_i = s_i''/(s_i')^2</span>, the Hessian of <span class="math inline">V(s(y))</span> factors as <span class="math inline">S' \cdot M(x) \cdot S'</span>, where <span class="math inline">S' = \text{diag}(s_1', \ldots, s_n')</span> is positive and:</p>
-<p><span class="math display">M(x) = Q + \text{diag}\!\big(\kappa \circ \nabla V(x)\big)</span></p>
-<p>with <span class="math inline">\nabla V(x) = Qx + q</span>. Since <span class="math inline">S'</span> is positive, <span class="math inline">V(s(y))</span> is concave if and only if <span class="math inline">M(x) \preceq 0</span> for all <span class="math inline">x \in \Delta_n</span>: the matrix <span class="math inline">M</span> must be <strong>negative semidefinite</strong> everywhere on the simplex.</p>
-<p>Two key facts make this checkable:</p>
-<ol type="1">
-<li><span class="math inline">M(x)</span> is <strong>affine in <span class="math inline">x</span></strong> (because <span class="math inline">\nabla V</span> is), hence <strong>matrix-concave</strong>.</li>
-<li>A matrix-concave function on a polytope achieves its maximum eigenvalue at a vertex.</li>
-</ol>
-<p>The simplex <span class="math inline">\Delta_n</span> has <span class="math inline">n + 1</span> vertices. So checking <span class="math inline">M(x) \preceq 0</span> everywhere reduces to checking it at <span class="math inline">n+1</span> points:</p>
-<p><span class="math display">\text{find}\; \kappa \;\;\text{s.t.}\;\; M(v_k) \preceq 0, \quad k = 0, 1, \ldots, n \tag{SDP}</span></p>
-<p>This is a semidefinite program with <span class="math inline">n+1</span> matrix constraints of size <span class="math inline">n \times n</span> — polynomial time.</p>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Note
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p><strong>Why the simplex matters.</strong> On a box <span class="math inline">[0,1]^n</span>, the same argument requires <span class="math inline">2^n</span> vertex checks. The simplex has only <span class="math inline">n+1</span>. The lean geometry of the strategy space makes the method efficient.</p>
-<p><strong>Matrix-concavity is what matters.</strong> The vertex trick does not require <span class="math inline">M(x)</span> to be affine — only matrix-concave. Since <span class="math inline">M(x)</span> modifies only the diagonal of <span class="math inline">Q</span>, matrix-concavity reduces to requiring each diagonal entry <span class="math inline">M_{ii}(x)</span> to be concave in <span class="math inline">x</span>. With constant curvature <span class="math inline">\kappa_i</span> these entries are affine (a special case), but richer reparameterizations where <span class="math inline">\kappa_i</span> depends on <span class="math inline">x_i</span> can produce concave diagonals while preserving the finite check.</p>
-</div>
-</div>
-<hr>
-</section>
-</section>
-<section id="certifying-the-routing-game" class="level2">
-<h2 class="anchored" data-anchor-id="certifying-the-routing-game">Certifying the routing game</h2>
-<p>Eliminate <span class="math inline">x_3 = 1 - x_1 - x_2</span> to reduce to <span class="math inline">n = 2</span> on the standard simplex <span class="math inline">\{y \geq 0, \mathbf{1}^\top y \leq 1\}</span>:</p>
-<p><span class="math display">
-\tilde{Q} = \begin{pmatrix} 2 &amp; -1.5 \\ -1.5 &amp; -0.5 \end{pmatrix}, \qquad \tilde{q} = \begin{pmatrix} 3 \\ 3 \end{pmatrix}.
-</span></p>
-<p>This reduced matrix is indefinite (<span class="math inline">\det \tilde{Q} = -3.25</span>). The nonconvexity does not go away.</p>
-<section id="the-check" class="level3">
-<h3 class="anchored" data-anchor-id="the-check">The check</h3>
-<p>Three vertices, three gradient vectors <span class="math inline">g(v) = \tilde{Q}v + \tilde{q}</span>, three certification matrices <span class="math inline">M(v) = \tilde{Q} + \kappa \cdot \text{diag}(g(v))</span>.</p>
-<p>With <span class="math inline">\kappa = -1.70</span> (concave reparameterization maps):</p>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 20%">
-<col style="width: 16%">
-<col style="width: 20%">
-<col style="width: 20%">
-<col style="width: 20%">
-</colgroup>
-<thead>
-<tr class="header">
-<th style="text-align: center;">Vertex</th>
-<th style="text-align: left;">All commuters on…</th>
-<th style="text-align: center;"><span class="math inline">g(v)</span></th>
-<th style="text-align: center;"><span class="math inline">\det M(v)</span></th>
-<th style="text-align: center;"><span class="math inline">\text{tr}\,M(v)</span></th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: center;"><span class="math inline">(1,0)</span></td>
-<td style="text-align: left;">Highway</td>
-<td style="text-align: center;"><span class="math inline">(5.0,\; 1.5)</span></td>
-<td style="text-align: center;"><span class="math inline">+17.58</span></td>
-<td style="text-align: center;"><span class="math inline">-9.55</span></td>
-</tr>
-<tr class="even">
-<td style="text-align: center;"><span class="math inline">(0,1)</span></td>
-<td style="text-align: left;">Bypass</td>
-<td style="text-align: center;"><span class="math inline">(1.5,\; 2.5)</span></td>
-<td style="text-align: center;"><span class="math inline">+0.36</span></td>
-<td style="text-align: center;"><span class="math inline">-5.30</span></td>
-</tr>
-<tr class="odd">
-<td style="text-align: center;"><span class="math inline">(0,0)</span></td>
-<td style="text-align: left;">Local road</td>
-<td style="text-align: center;"><span class="math inline">(3.0,\; 3.0)</span></td>
-<td style="text-align: center;"><span class="math inline">+15.11</span></td>
-<td style="text-align: center;"><span class="math inline">-8.70</span></td>
-</tr>
-</tbody>
-</table>
-<p>At every vertex, <span class="math inline">M(v)</span> has positive determinant and negative trace — both eigenvalues are negative, so <span class="math inline">M(v) \prec 0</span>. By concavity of <span class="math inline">\lambda_{\min}</span> (equivalently, convexity of <span class="math inline">\lambda_{\max}</span>), <span class="math inline">M(x) \preceq 0</span> holds everywhere on the simplex.</p>
-<p><strong>The game is in the tractable class.</strong> After reparameterization, <span class="math inline">V</span> is globally concave.</p>
-</section>
-<section id="the-tightest-constraint" class="level3">
-<h3 class="anchored" data-anchor-id="the-tightest-constraint">The tightest constraint</h3>
-<p>Vertex <span class="math inline">(0,1)</span> — everyone on the bypass — gives the smallest determinant (<span class="math inline">0.36</span>). There, the highway gradient <span class="math inline">g_1 = 1.5</span> provides the weakest diagonal correction: the highway isn’t very attractive when nobody uses it (the complementarity benefit <span class="math inline">Q_{12} = -1</span> hasn’t kicked in). This produces the tightest NSD margin.</p>
-<p>Had <span class="math inline">q</span> been less differentiated — say <span class="math inline">(2, 2, 1)</span> instead of <span class="math inline">(4.5, 4, 1)</span> — the gradients would shrink and certification would fail. <strong>Feasibility requires that routes differ enough in intrinsic quality for the congestion interactions to be secondary.</strong></p>
-</section>
-<section id="the-global-optimum" class="level3">
-<h3 class="anchored" data-anchor-id="the-global-optimum">The global optimum</h3>
-<p>With certification in hand, apply the concave reparameterization and run gradient ascent on <span class="math inline">V(s(y))</span>. Since <span class="math inline">V</span> is now globally concave, there is a <strong>unique</strong> local (and therefore global) maximum:</p>
+<p><span class="math inline">Q</span> is indefinite (eigenvalues <span class="math inline">\approx +2.73, +0.54, -0.77</span>). After coordinate elimination, the reduced matrix <span class="math inline">\tilde{Q}</span> has <span class="math inline">\det = -3.25</span> — the indefiniteness is genuine.</p>
+<p><strong>Certification.</strong> With <span class="math inline">\kappa = -1.70</span>, <span class="math inline">M(v) \prec 0</span> at all three vertices of the reduced simplex. The concavified <span class="math inline">V</span> has a unique global maximum:</p>
 <p><span class="math display">x^* = (1, 0, 0), \qquad V(x^*) = 5.5.</span></p>
-<p>All commuters on the highway — the route with the best free-flow quality (<span class="math inline">q_1 = 4.5</span>). Its high self-congestion (<span class="math inline">Q_{11} = 2</span>) is dominated by the intrinsic advantage. Mixing in the bypass might seem tempting — the complementarity <span class="math inline">Q_{12} = -1</span> provides congestion relief — but the certificate tells us no mixed split improves on the pure highway. (See <a href="file:///usr/local/google/home/dvij/verify_routing_game.py"><code>verify_routing_game.py</code></a> for a self-contained script that verifies all numerical claims.)</p>
-<hr>
+<p>All commuters on the highway — the route with the best free-flow quality (<span class="math inline">q_1 = 4.5</span>). Its self-congestion (<span class="math inline">Q_{11} = 2</span>) is dominated by the intrinsic advantage. The complementarity <span class="math inline">Q_{12} = -1</span> with the bypass provides congestion relief, but the certificate tells us no mixed split improves on the pure highway. (See <a href="file:///usr/local/google/home/dvij/verify_routing_game.py"><code>verify_routing_game.py</code></a> for a self-contained verification script.)</p>
 </section>
-</section>
-<section id="a-non-vertex-optimum-platform-adoption" class="level2">
-<h2 class="anchored" data-anchor-id="a-non-vertex-optimum-platform-adoption">A non-vertex optimum: platform adoption</h2>
-<p>The routing example has its optimum at a vertex. To see the method find a <strong>mixed</strong> optimum, consider a platform adoption game with <span class="math inline">n = 3</span> technologies.</p>
+<section id="example-2-platform-adoption-mixed-optimum" class="level3">
+<h3 class="anchored" data-anchor-id="example-2-platform-adoption-mixed-optimum">Example 2: platform adoption (mixed optimum)</h3>
 <p><span class="math display">
 Q = \begin{pmatrix} -3 &amp; 3.5 &amp; 0.5 \\ 3.5 &amp; 3.5 &amp; 3 \\ 0.5 &amp; 3 &amp; 2 \end{pmatrix}, \qquad q = \begin{pmatrix} 17 \\ 14 \\ 12 \end{pmatrix}.
 </span></p>
-<p>Here <span class="math inline">Q_{12} = 3.5 &gt; 0</span>: platforms 1 and 2 are <strong>synergistic</strong> — adopting both together creates positive network effects (e.g., interoperable standards). Meanwhile <span class="math inline">Q_{11} = -3 &lt; 0</span>: concentrating entirely on platform 1 has diminishing returns (saturation). The reduced matrix <span class="math inline">\tilde{Q} = \bigl[\begin{smallmatrix} -2 &amp; 2 \\ 2 &amp; -0.5 \end{smallmatrix}\bigr]</span> is indefinite (<span class="math inline">\det = -3</span>).</p>
-<section id="certification" class="level3">
-<h3 class="anchored" data-anchor-id="certification">Certification</h3>
-<p>With <span class="math inline">\kappa = -0.3</span>, the NSD check passes at all three vertices:</p>
-<table class="caption-top table">
-<thead>
-<tr class="header">
-<th style="text-align: center;">Vertex</th>
-<th style="text-align: center;"><span class="math inline">g(v)</span></th>
-<th style="text-align: center;"><span class="math inline">\det M(v)</span></th>
-<th style="text-align: center;"><span class="math inline">\text{tr}\,M(v)</span></th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: center;"><span class="math inline">(1,0)</span></td>
-<td style="text-align: center;"><span class="math inline">(1.5,\; 5.0)</span></td>
-<td style="text-align: center;"><span class="math inline">+0.90</span></td>
-<td style="text-align: center;"><span class="math inline">-4.45</span></td>
-</tr>
-<tr class="even">
-<td style="text-align: center;"><span class="math inline">(0,1)</span></td>
-<td style="text-align: center;"><span class="math inline">(5.5,\; 2.5)</span></td>
-<td style="text-align: center;"><span class="math inline">+0.56</span></td>
-<td style="text-align: center;"><span class="math inline">-4.90</span></td>
-</tr>
-<tr class="odd">
-<td style="text-align: center;"><span class="math inline">(0,0)</span></td>
-<td style="text-align: center;"><span class="math inline">(3.5,\; 3.0)</span></td>
-<td style="text-align: center;"><span class="math inline">+0.27</span></td>
-<td style="text-align: center;"><span class="math inline">-4.45</span></td>
-</tr>
-</tbody>
-</table>
-</section>
-<section id="the-optimum" class="level3">
-<h3 class="anchored" data-anchor-id="the-optimum">The optimum</h3>
-<p>Gradient ascent in the reparameterized space converges to the unique global maximum:</p>
+<p>Platforms 1 and 2 are <strong>synergistic</strong> (<span class="math inline">Q_{12} = 3.5</span>) — adopting both creates positive network effects. Platform 1 has diminishing returns (<span class="math inline">Q_{11} = -3</span>). The reduced matrix is indefinite (<span class="math inline">\det \tilde{Q} = -3</span>).</p>
+<p><strong>Certification.</strong> With <span class="math inline">\kappa = -0.3</span>, the NSD check passes. Gradient ascent converges to:</p>
 <p><span class="math display">x^* \approx (0.46,\; 0.54,\; 0), \qquad V(x^*) = 16.44.</span></p>
-<p>Users split roughly half-and-half between the two synergistic platforms; nobody adopts platform 3. This mixed equilibrium is not at any vertex — it cannot be found by evaluating <span class="math inline">V</span> at pure strategies. The concavification certificate guarantees this is the unique global optimum.</p>
-<hr>
+<p>A mixed equilibrium — users split between the two synergistic platforms, nobody adopts platform 3. This optimum is not at any vertex and cannot be found by pure-strategy enumeration. The concavification certificate guarantees it is the unique global maximum.</p>
 </section>
-</section>
-<section id="the-bigger-picture" class="level2">
-<h2 class="anchored" data-anchor-id="the-bigger-picture">The bigger picture</h2>
-<section id="the-tractable-class" class="level3">
-<h3 class="anchored" data-anchor-id="the-tractable-class">The tractable class</h3>
-<p>The SDP is feasible whenever <strong>intrinsic payoffs dominate strategic interactions</strong> — <span class="math inline">q</span> is large relative to <span class="math inline">Q</span>’s indefiniteness. This defines a <strong>tractable class</strong>: the set of <span class="math inline">(Q, q)</span> pairs for which the SDP has a solution.</p>
-<ul>
-<li><strong>Convex</strong> in <span class="math inline">(Q, q)</span> space — membership is efficiently testable.</li>
-<li><strong>Grows with <span class="math inline">\|q\|</span></strong> — more games become certifiable as intrinsic payoffs strengthen.</li>
-<li><strong>Excludes the provably hard cases</strong> — <span class="math inline">q = 0</span> gives <span class="math inline">\max x^\top Q x</span> on <span class="math inline">\Delta_n</span>, an NP-hard problem (Motzkin–Straus / max clique). These are never certifiable.</li>
-</ul>
-</section>
-<section id="the-pipeline" class="level3">
-<h3 class="anchored" data-anchor-id="the-pipeline">The pipeline</h3>
-<ol type="1">
-<li><strong>Certify</strong> (poly time): solve the SDP to find curvature parameters <span class="math inline">\kappa</span>.</li>
-<li><strong>Solve</strong> (poly time): maximize the now-concave <span class="math inline">V(s(y))</span> by gradient ascent.</li>
-<li><strong>Recover</strong>: <span class="math inline">x^* = s(y^*)</span> is the welfare-maximizing equilibrium.</li>
-</ol>
-</section>
-<section id="how-large-is-the-tractable-class" class="level3">
-<h3 class="anchored" data-anchor-id="how-large-is-the-tractable-class">How large is the tractable class?</h3>
+<section id="numerical-evidence" class="level3">
+<h3 class="anchored" data-anchor-id="numerical-evidence">Numerical evidence</h3>
 <p>On 500 random indefinite potential games (<span class="math inline">n = 4</span>, <span class="math inline">\|q\|/\|Q\| \approx 3</span>):</p>
 <table class="caption-top table">
 <thead>
@@ -683,7 +579,7 @@ Q = \begin{pmatrix} -3 &amp; 3.5 &amp; 0.5 \\ 3.5 &amp; 3.5 &amp; 3 \\ 0.5 &amp;
 </tr>
 </tbody>
 </table>
-<p>Of the 411 certifiable games, <strong>29 had interior global optima</strong> — fully mixed equilibria where traffic spreads across all routes. The reparameterization found every one exactly, validated against brute-force global search.</p>
+<p>Of the 411 certifiable games, <strong>29 had interior global optima</strong> — fully mixed equilibria. The reparameterization found every one exactly, validated against brute-force global search.</p>
 </section>
 <section id="dynamics" class="level3">
 <h3 class="anchored" data-anchor-id="dynamics">Dynamics</h3>
@@ -709,9 +605,9 @@ Note
 <h2 class="anchored" data-anchor-id="open-questions">Open questions</h2>
 <p><strong>A diagonal dominance sufficient condition.</strong> The SDP is one way to certify the tractable class. A simpler (but more conservative) sufficient condition comes from diagonal dominance: <span class="math inline">M(x) \preceq 0</span> holds whenever each diagonal entry dominates its row, i.e., <span class="math inline">|\kappa_i| \cdot g_i(x) - Q_{ii} \geq \sum_{j \neq i} |Q_{ij}|</span> for all <span class="math inline">i</span> and <span class="math inline">x \in \Delta_n</span>. Since <span class="math inline">g_i</span> is affine and achieves its minimum at a vertex, this reduces to:</p>
 <p><span class="math display">\min_{v \in \text{vert}(\Delta_n)} [Qv + q]_i \;&gt;\; \sum_j |Q_{ij}| \cdot \frac{1}{|\kappa_i|} + Q_{ii}</span></p>
-<p>In words: <strong>each strategy’s minimum payoff gradient (over pure-strategy profiles) must exceed the total absolute interaction strength of that strategy.</strong> This is the “standalone payoffs dominate interactions” intuition made precise. It is not tight — the SDP exploits correlations between rows — but it gives a closed-form sufficient condition without solving an optimization problem. Can this gap be characterized? Is there a scaled diagonal dominance condition (à la Geršgorin with optimal scaling) that is both closed-form and tight?</p>
-<p><strong>Richer reparameterizations via matrix-concavity.</strong> Constant-curvature maps make <span class="math inline">M(x)</span> affine — a special case of matrix-concave. Allowing <span class="math inline">\kappa_i</span> to depend on <span class="math inline">x_i</span> (e.g., <span class="math inline">\kappa_i(x_i) = a_i + b_i x_i</span>) produces diagonal entries that are quadratic in <span class="math inline">x</span>. If these remain concave, the vertex trick still applies with <span class="math inline">n+1</span> checks. Does this broader family — certifiable via the same SDP structure — capture meaningfully more games than constant curvature?</p>
-<p><strong>Relation to the S-lemma.</strong> The classical S-lemma establishes joint convexity of the numerical range of a pair of quadratic forms. Reparameterization convexifies the primal potential directly. Do these approaches certify the same class of games, or are they fundamentally different?</p>
+<p>In words: <strong>each coordinate’s minimum gradient (over vertices) must exceed the total absolute interaction strength of that coordinate.</strong> This is the “linear term dominates interactions” intuition made precise. It is not tight — the SDP exploits correlations between rows — but it gives a closed-form sufficient condition. Can this gap be characterized? Is there a scaled diagonal dominance condition (à la Geršgorin with optimal scaling) that is both closed-form and tight?</p>
+<p><strong>Richer reparameterizations via matrix-concavity.</strong> Constant-curvature maps make <span class="math inline">M(x)</span> affine — a special case of matrix-concave. Allowing <span class="math inline">\kappa_i</span> to depend on <span class="math inline">x_i</span> (e.g., <span class="math inline">\kappa_i(x_i) = a_i + b_i x_i</span>) produces diagonal entries that are quadratic in <span class="math inline">x</span>. If these remain concave, the vertex trick still applies with <span class="math inline">n+1</span> checks. Does this broader family capture meaningfully more problems than constant curvature?</p>
+<p><strong>Relation to the S-lemma.</strong> The classical S-lemma establishes joint convexity of the numerical range of a pair of quadratic forms. Reparameterization convexifies the primal objective directly. Do these approaches certify the same class, or are they fundamentally different?</p>
 <hr>
 </section>
 <section id="references" class="level2">
