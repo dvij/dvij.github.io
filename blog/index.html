@@ -6,8 +6,11 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="author" content="Dj">
+<meta name="dcterms.date" content="2026-03-06">
+<meta name="description" content="Optimizing an indefinite quadratic over the simplex is NP-hard. But a componentwise change of variables can render the objective convex, and whether it works is checkable by a small SDP with n+1 constraints. We characterize the tractable class and apply it to welfare maximization in potential games.">
 
-<title>Dj’s Blog</title>
+<title>Convexification of Simplex-Constrained QPs, with an Application to Potential Games – Dj’s Blog</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -75,6 +78,49 @@ ul.task-list li input[type="checkbox"] {
 }</script>
 <style>html{ scroll-behavior: smooth; }</style>
 
+  <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css">
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
@@ -248,7 +294,7 @@ ul.task-list li input[type="checkbox"] {
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="./index.html">
-    <span class="navbar-title">Dj's Blog</span>
+    <span class="navbar-title">Dj’s Blog</span>
     </a>
   </div>
             <div id="quarto-search" class="" title="Search"></div>
@@ -289,17 +335,315 @@ ul.task-list li input[type="checkbox"] {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#the-problem" id="toc-the-problem" class="nav-link active" data-scroll-target="#the-problem">The problem</a></li>
+  <li><a href="#the-reparameterization" id="toc-the-reparameterization" class="nav-link" data-scroll-target="#the-reparameterization">The reparameterization</a>
+  <ul class="collapse">
+  <li><a href="#the-hessian" id="toc-the-hessian" class="nav-link" data-scroll-target="#the-hessian">The Hessian</a></li>
+  <li><a href="#both-objective-and-constraint-become-convex" id="toc-both-objective-and-constraint-become-convex" class="nav-link" data-scroll-target="#both-objective-and-constraint-become-convex">Both objective and constraint become convex</a></li>
+  <li><a href="#reducing-to-a-finite-check" id="toc-reducing-to-a-finite-check" class="nav-link" data-scroll-target="#reducing-to-a-finite-check">Reducing to a finite check</a></li>
+  </ul></li>
+  <li><a href="#the-tractable-class" id="toc-the-tractable-class" class="nav-link" data-scroll-target="#the-tractable-class">The tractable class</a>
+  <ul class="collapse">
+  <li><a href="#definition" id="toc-definition" class="nav-link" data-scroll-target="#definition">Definition</a></li>
+  <li><a href="#the-pipeline" id="toc-the-pipeline" class="nav-link" data-scroll-target="#the-pipeline">The pipeline</a></li>
+  <li><a href="#limits" id="toc-limits" class="nav-link" data-scroll-target="#limits">Limits</a></li>
+  </ul></li>
+  <li><a href="#application-welfare-maximization-in-potential-games" id="toc-application-welfare-maximization-in-potential-games" class="nav-link" data-scroll-target="#application-welfare-maximization-in-potential-games">Application: welfare maximization in potential games</a>
+  <ul class="collapse">
+  <li><a href="#background" id="toc-background" class="nav-link" data-scroll-target="#background">Background</a></li>
+  <li><a href="#example-1-traffic-routing" id="toc-example-1-traffic-routing" class="nav-link" data-scroll-target="#example-1-traffic-routing">Example 1: traffic routing</a></li>
+  <li><a href="#example-2-platform-adoption-mixed-optimum-via-concavification" id="toc-example-2-platform-adoption-mixed-optimum-via-concavification" class="nav-link" data-scroll-target="#example-2-platform-adoption-mixed-optimum-via-concavification">Example 2: platform adoption (mixed optimum via concavification)</a></li>
+  <li><a href="#numerical-evidence" id="toc-numerical-evidence" class="nav-link" data-scroll-target="#numerical-evidence">Numerical evidence</a></li>
+  <li><a href="#dynamics" id="toc-dynamics" class="nav-link" data-scroll-target="#dynamics">Dynamics</a></li>
+  </ul></li>
+  <li><a href="#open-questions" id="toc-open-questions" class="nav-link" data-scroll-target="#open-questions">Open questions</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
-<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"></header>
+<main class="content" id="quarto-document-content">
 
 
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Convexification of Simplex-Constrained QPs, with an Application to Potential Games</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">optimization</div>
+    <div class="quarto-category">theory</div>
+    <div class="quarto-category">game-theory</div>
+    <div class="quarto-category">semidefinite-programming</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    Optimizing an indefinite quadratic over the simplex is NP-hard. But a componentwise change of variables can render the objective convex, and whether it works is checkable by a small SDP with n+1 constraints. We characterize the tractable class and apply it to welfare maximization in potential games.
+  </div>
+</div>
 
 
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Dj </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">March 6, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
 
 
+</header>
+
+
+<section id="the-problem" class="level2">
+<h2 class="anchored" data-anchor-id="the-problem">The problem</h2>
+<p>Consider the quadratic program on the simplex:</p>
+<p><span class="math display">\min_{x \in \Delta_n}\; V(x) = \tfrac{1}{2}\, x^\top Q\, x + q^\top x</span></p>
+<p>where <span class="math inline">Q \in \mathbb{R}^{n \times n}</span> is symmetric and <span class="math inline">\Delta_n = \{x \geq 0 : \mathbf{1}^\top x = 1\}</span>.</p>
+<ul>
+<li>If <span class="math inline">Q \succeq 0</span>, <span class="math inline">V</span> is <strong>convex</strong> — gradient descent finds the global minimum.</li>
+<li>If <span class="math inline">Q \preceq 0</span>, <span class="math inline">V</span> is <strong>concave</strong> — the minimum is at a vertex; check <span class="math inline">n+1</span> points.</li>
+<li>If <span class="math inline">Q</span> is <strong>indefinite</strong>, neither approach works. The problem is NP-hard in general (Motzkin–Straus).</li>
+</ul>
+<p>This post describes a method that handles a large subclass of the indefinite case. A <strong>componentwise change of variables</strong> <span class="math inline">x_i = s_i(y_i)</span> can render <span class="math inline">V</span> convex in the new coordinates, and whether such a change exists is checkable by a semidefinite program with only <span class="math inline">n+1</span> constraints. When it succeeds, <strong>both the objective and the constraint become convex</strong> — a standard convex program.</p>
+<hr>
+</section>
+<section id="the-reparameterization" class="level2">
+<h2 class="anchored" data-anchor-id="the-reparameterization">The reparameterization</h2>
+<p>We ask: <strong>is there a smooth, componentwise map <span class="math inline">x_i = s_i(y_i)</span> that makes <span class="math inline">V(s(y))</span> convex in <span class="math inline">y</span>?</strong></p>
+<section id="the-hessian" class="level3">
+<h3 class="anchored" data-anchor-id="the-hessian">The Hessian</h3>
+<p>For maps <span class="math inline">s_i</span> with constant curvature <span class="math inline">\kappa_i = s_i''/(s_i')^2</span>, the Hessian of <span class="math inline">V(s(y))</span> factors as:</p>
+<p><span class="math display">H(y) = S'(y) \cdot M(x) \cdot S'(y)</span></p>
+<p>where <span class="math inline">S' = \text{diag}(s_1', \ldots, s_n')</span> is positive and:</p>
+<p><span class="math display">M(x) = Q + \text{diag}\!\big(\kappa \circ \nabla V(x)\big), \qquad \nabla V(x) = Qx + q.</span></p>
+<p>Since <span class="math inline">S' \succ 0</span>, convexity of <span class="math inline">V(s(y))</span> is equivalent to <span class="math inline">M(x) \succeq 0</span> for all <span class="math inline">x \in \Delta_n</span>.</p>
+</section>
+<section id="both-objective-and-constraint-become-convex" class="level3">
+<h3 class="anchored" data-anchor-id="both-objective-and-constraint-become-convex">Both objective and constraint become convex</h3>
+<p>For convex maps <span class="math inline">s_i</span> (the case <span class="math inline">\kappa_i &gt; 0</span>):</p>
+<ul>
+<li><strong>Objective</strong>: <span class="math inline">V(s(y))</span> is convex (by the PSD condition on <span class="math inline">M</span>).</li>
+<li><strong>Constraint</strong>: the reparameterized feasible set is <span class="math inline">\{y \geq 0 : \sum_i s_i(y_i) \leq 1\}</span> — the sublevel set of the convex function <span class="math inline">\sum s_i</span>. This is a <strong>convex set</strong>.</li>
+</ul>
+<p>The full reparameterized problem is therefore: <strong>minimize a convex function over a convex set</strong> — solvable in polynomial time by projected gradient descent.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Maximization for free.</strong> Convexification also solves <span class="math inline">\max V</span> on <span class="math inline">\Delta_n</span>: a convex function attains its maximum at a vertex of a polytope, so we just evaluate <span class="math inline">V</span> at the <span class="math inline">n+1</span> vertices. The same certificate handles both directions.</p>
+</div>
+</div>
+</section>
+<section id="reducing-to-a-finite-check" class="level3">
+<h3 class="anchored" data-anchor-id="reducing-to-a-finite-check">Reducing to a finite check</h3>
+<p>Two key facts:</p>
+<ol type="1">
+<li><span class="math inline">M(x)</span> is <strong>affine in <span class="math inline">x</span></strong> (because <span class="math inline">\nabla V</span> is), hence <strong>matrix-concave</strong>.</li>
+<li>A matrix-concave function on a polytope attains its minimum eigenvalue at a vertex.</li>
+</ol>
+<p>The simplex <span class="math inline">\Delta_n</span> has <span class="math inline">n + 1</span> vertices. So checking <span class="math inline">M(x) \succeq 0</span> everywhere reduces to:</p>
+<p><span class="math display">\text{find}\; \kappa \;\;\text{s.t.}\;\; M(v_k) \succeq 0, \quad k = 0, 1, \ldots, n \tag{SDP}</span></p>
+<p>This is a semidefinite program with <span class="math inline">n+1</span> matrix constraints of size <span class="math inline">n \\times n</span> — polynomial time.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Why the simplex matters.</strong> On a box <span class="math inline">[0,1]^n</span>, the same argument requires <span class="math inline">2^n</span> vertex checks. The simplex has only <span class="math inline">n+1</span>.</p>
+<p><strong>Matrix-concavity is what matters.</strong> The vertex trick requires <span class="math inline">M(x)</span> to be matrix-concave — meaning each diagonal entry <span class="math inline">M_{ii}(x)</span> must be concave as a function of the <strong>full</strong> vector <span class="math inline">x</span>, not just <span class="math inline">x_i</span>. With constant <span class="math inline">\kappa_i</span>, <span class="math inline">M_{ii}(x) = Q_{ii} + \kappa_i (Q_i^\top x + q_i)</span> is affine in <span class="math inline">x</span> and therefore concave. Allowing <span class="math inline">\kappa_i</span> to depend on <span class="math inline">x_i</span> makes <span class="math inline">M_{ii}</span> quadratic in <span class="math inline">x</span>, and the cross-term Hessian <span class="math inline">\partial^2 M_{ii}/\partial x_j \partial x_k = b_i(Q_{ij}\delta_{ik} + Q_{ik}\delta_{ij})</span> is indefinite whenever <span class="math inline">Q</span> has off-diagonal entries. Finding reparameterization families richer than constant curvature while preserving matrix-concavity remains open.</p>
+</div>
+</div>
+<hr>
+</section>
+</section>
+<section id="the-tractable-class" class="level2">
+<h2 class="anchored" data-anchor-id="the-tractable-class">The tractable class</h2>
+<section id="definition" class="level3">
+<h3 class="anchored" data-anchor-id="definition">Definition</h3>
+<p>The <strong>tractable class</strong> <span class="math inline">\mathcal{T}</span> is the set of <span class="math inline">(Q, q)</span> pairs for which the SDP is feasible.</p>
+<ul>
+<li><strong>Convex</strong> in <span class="math inline">(Q, q)</span> space — membership is efficiently testable.</li>
+<li><strong>Grows with <span class="math inline">\|q\|</span></strong> — as the linear term dominates, more problems become certifiable.</li>
+<li><strong>Excludes the provably hard cases</strong> — <span class="math inline">q = 0</span> gives the pure homogeneous QP on <span class="math inline">\Delta_n</span>, which encodes max clique. These are never certifiable.</li>
+</ul>
+</section>
+<section id="the-pipeline" class="level3">
+<h3 class="anchored" data-anchor-id="the-pipeline">The pipeline</h3>
+<p>For any <span class="math inline">(Q, q) \in \mathcal{T}</span>:</p>
+<ol type="1">
+<li><strong>Certify</strong> (poly time): solve the SDP to find curvature parameters <span class="math inline">\kappa &gt; 0</span>.</li>
+<li><strong>Solve min</strong> (poly time): minimize the now-convex <span class="math inline">V(s(y))</span> over the convex set <span class="math inline">\{y \geq 0, \sum s_i(y_i) \leq 1\}</span>.</li>
+<li><strong>Solve max</strong> (constant time): evaluate <span class="math inline">V</span> at the <span class="math inline">n+1</span> vertices of <span class="math inline">\Delta_n</span>.</li>
+<li><strong>Recover</strong>: <span class="math inline">x^* = s(y^*)</span> is the global minimizer.</li>
+</ol>
+</section>
+<section id="limits" class="level3">
+<h3 class="anchored" data-anchor-id="limits">Limits</h3>
+<p>The method cannot certify every indefinite QP — only those where <span class="math inline">q</span> is large enough relative to <span class="math inline">Q</span>’s indefiniteness.</p>
+<p><strong>The boundary.</strong> As <span class="math inline">\|q\| \to 0</span>, the diagonal boost <span class="math inline">\kappa \circ \nabla V(x)</span> vanishes and <span class="math inline">M(x) \to Q</span>, which is indefinite. As <span class="math inline">\|q\| \to \infty</span>, gradients grow, providing a uniformly large diagonal correction.</p>
+<p><strong>What remains hard.</strong> Pure interaction problems (<span class="math inline">q = 0</span>), problems where interactions dominate (<span class="math inline">\|q\| \ll \|Q\|</span>), and strongly conflicting off-diagonal structure.</p>
+<hr>
+</section>
+</section>
+<section id="application-welfare-maximization-in-potential-games" class="level2">
+<h2 class="anchored" data-anchor-id="application-welfare-maximization-in-potential-games">Application: welfare maximization in potential games</h2>
+<section id="background" class="level3">
+<h3 class="anchored" data-anchor-id="background">Background</h3>
+<p>A <strong>potential game</strong> has a scalar function <span class="math inline">V(x)</span> whose stationary points on <span class="math inline">\Delta_n</span> are exactly the Nash equilibria. When <span class="math inline">V</span> is quadratic, welfare optimization is a simplex-constrained QP.</p>
+<p>In congestion games, higher <span class="math inline">V</span> means higher welfare (lower system delay). The <strong>socially optimal</strong> equilibrium maximizes <span class="math inline">V</span> — an NP-hard problem in general (Conitzer &amp; Sandholm 2003, even inapproximable).</p>
+<p>For convexifiable <span class="math inline">(Q, q) \in \mathcal{T}</span>: since a convex function on a polytope attains its maximum at a vertex, the welfare-maximizing equilibrium is found by evaluating <span class="math inline">V</span> at the <span class="math inline">n+1</span> pure strategies.</p>
+</section>
+<section id="example-1-traffic-routing" class="level3">
+<h3 class="anchored" data-anchor-id="example-1-traffic-routing">Example 1: traffic routing</h3>
+<p>A unit mass of commuters splits among <span class="math inline">n = 3</span> routes.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 31%">
+<col style="width: 18%">
+<col style="width: 31%">
+<col style="width: 18%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: center;">Route</th>
+<th>Description</th>
+<th style="text-align: center;">Free-flow time</th>
+<th>Key feature</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">1 — Highway</td>
+<td>Through city center</td>
+<td style="text-align: center;">25 min</td>
+<td>Fast but bottleneck-prone</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">2 — Bypass</td>
+<td>Six-lane ring road</td>
+<td style="text-align: center;">32 min</td>
+<td>High capacity, long</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;">3 — Local</td>
+<td>Two-lane suburban road</td>
+<td style="text-align: center;">28 min</td>
+<td>Moderate; merges with both others</td>
+</tr>
+</tbody>
+</table>
+<p><span class="math display">
+Q = \begin{pmatrix} 2 &amp; -1 &amp; 0.5 \\ -1 &amp; 0.5 &amp; 1 \\ 0.5 &amp; 1 &amp; 1 \end{pmatrix}, \qquad q = \begin{pmatrix} 4.5 \\ 4 \\ 1 \end{pmatrix}.
+</span></p>
+<p><span class="math inline">Q</span> is indefinite (eigenvalues <span class="math inline">\approx +2.73, +0.54, -0.77</span>). The reduced <span class="math inline">\tilde{Q}</span> has <span class="math inline">\det = -3.25</span>.</p>
+<p><strong>Certification.</strong> With <span class="math inline">\kappa = 0.63</span>, <span class="math inline">M(v) \succ 0</span> at all three reduced-simplex vertices (positive trace and determinant at each). The reparameterized <span class="math inline">V</span> is convex.</p>
+<p><strong>Result.</strong> Since <span class="math inline">V</span> is convex on <span class="math inline">\Delta_3</span>, the maximum is at a vertex. Evaluating:</p>
+<p><span class="math display">V(1,0,0) = 5.5, \quad V(0,1,0) = 4.25, \quad V(0,0,1) = 1.5.</span></p>
+<p>The welfare-maximizing equilibrium is <span class="math inline">x^* = (1,0,0)</span> with <span class="math inline">V = 5.5</span> — all commuters on the highway, the route with the best intrinsic quality (<span class="math inline">q_1 = 4.5</span>). The certificate guarantees this is the global maximum. (See <a href="file:///usr/local/google/home/dvij/verify_routing_game.py"><code>verify_routing_game.py</code></a>.)</p>
+</section>
+<section id="example-2-platform-adoption-mixed-optimum-via-concavification" class="level3">
+<h3 class="anchored" data-anchor-id="example-2-platform-adoption-mixed-optimum-via-concavification">Example 2: platform adoption (mixed optimum via concavification)</h3>
+<p>Not all games are convexifiable. Some admit <strong>concavification</strong> instead — replacing <span class="math inline">M \succeq 0</span> with <span class="math inline">M \preceq 0</span> using <span class="math inline">\kappa &lt; 0</span>, which makes <span class="math inline">V \circ s</span> concave. This certifies a unique global maximum directly, which need not be at a vertex.</p>
+<p><span class="math display">
+Q = \begin{pmatrix} -3 &amp; 3.5 &amp; 0.5 \\ 3.5 &amp; 3.5 &amp; 3 \\ 0.5 &amp; 3 &amp; 2 \end{pmatrix}, \qquad q = \begin{pmatrix} 17 \\ 14 \\ 12 \end{pmatrix}.
+</span></p>
+<p>Platforms 1 and 2 are <strong>synergistic</strong> (<span class="math inline">Q_{12} = 3.5</span>) — adopting both creates positive network effects. The reduced matrix is indefinite (<span class="math inline">\det \tilde{Q} = -3</span>). This game is NOT convexifiable (the PSD check fails for all <span class="math inline">\kappa &gt; 0</span>), but it IS <strong>concavifiable</strong> with <span class="math inline">\kappa = -0.3</span>.</p>
+<p><span class="math display">x^* \approx (0.46,\; 0.54,\; 0), \qquad V(x^*) = 16.44.</span></p>
+<p>Users split between the two synergistic platforms. This mixed equilibrium is not at any vertex — convexification would miss it entirely. The concavification certificate guarantees it is the unique global maximum.</p>
+</section>
+<section id="numerical-evidence" class="level3">
+<h3 class="anchored" data-anchor-id="numerical-evidence">Numerical evidence</h3>
+<p>On 500 random indefinite potential games (<span class="math inline">n = 4</span>, <span class="math inline">\|q\|/\|Q\| \approx 3</span>):</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th></th>
+<th style="text-align: center;">Count</th>
+<th style="text-align: center;">%</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Certifiably tractable</td>
+<td style="text-align: center;">411</td>
+<td style="text-align: center;">82%</td>
+</tr>
+<tr class="even">
+<td>Not certifiable</td>
+<td style="text-align: center;">89</td>
+<td style="text-align: center;">18%</td>
+</tr>
+</tbody>
+</table>
+<p>Of the 411 certifiable games, <strong>29 had interior global optima</strong> — fully mixed equilibria. The reparameterization found every one exactly, validated against brute-force global search.</p>
+</section>
+<section id="dynamics" class="level3">
+<h3 class="anchored" data-anchor-id="dynamics">Dynamics</h3>
+<p>In potential games, learning dynamics (replicator, gradient play) converge to <em>some</em> Nash equilibrium — but not necessarily the optimal one. In the certifiable class, the reparameterized <span class="math inline">V</span> has a unique global optimum, so:</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Corollary.</strong> For games in the certifiable class, gradient-based dynamics in the reparameterized space converge to the welfare-maximizing equilibrium from almost all initial conditions.</p>
+</div>
+</div>
+<hr>
+</section>
+</section>
+<section id="open-questions" class="level2">
+<h2 class="anchored" data-anchor-id="open-questions">Open questions</h2>
+<p><strong>A diagonal dominance sufficient condition.</strong> A simpler sufficient condition for <span class="math inline">M(x) \succeq 0</span> comes from diagonal dominance: <span class="math inline">\kappa_i \cdot g_i(x) + Q_{ii} \geq \sum_{j \neq i} |Q_{ij}|</span> at all vertices. This is the “linear term dominates interactions” intuition. Is there a scaled version (à la Geršgorin) that is tight?</p>
+<p><strong>Richer reparameterizations.</strong> Constant-curvature maps give <span class="math inline">M(x)</span> affine — hence matrix-concave, enabling the vertex trick. The natural generalization <span class="math inline">\kappa_i(x_i)</span> makes <span class="math inline">M_{ii}</span> quadratic with indefinite Hessian, destroying matrix-concavity. Can a different parameterization extend the tractable class?</p>
+<p><strong>Relation to the S-lemma.</strong> The classical S-lemma establishes joint convexity of the numerical range of a pair of quadratic forms. Reparameterization convexifies the primal objective directly. Do these certify the same class?</p>
+<hr>
+</section>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">References</h2>
+<ul>
+<li>Monderer, D. &amp; Shapley, L.S. (1996). Potential games. <em>Games and Economic Behavior</em> 14(1), 124–143.</li>
+<li>Sandholm, W.H. (2010). <em>Population Games and Evolutionary Dynamics.</em> MIT Press.</li>
+<li>Conitzer, V. &amp; Sandholm, T. (2003). Complexity results about Nash equilibria. <em>IJCAI</em>, 765–771.</li>
+<li>Bomze, I.M. (1998). On standard quadratic optimization problems. <em>Journal of Global Optimization</em> 13(4), 369–387.</li>
+<li>Burer, S. &amp; Ye, Y. (2020). Exactness of Parrilo’s conic approximations for copositive programs. <em>Mathematics of Operations Research</em> 45(1), 265–290.</li>
+</ul>
+
+
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -727,8 +1071,8 @@ ul.task-list li input[type="checkbox"] {
       &nbsp;
     </div>   
     <div class="nav-footer-center">
-      <div class="footer-contents">© 2026 Dj · Built with [Quarto](https://quarto.org)</div>  
-    </div>
+<p>© 2026 Dj · Built with <a href="https://quarto.org">Quarto</a></p>
+</div>
     <div class="nav-footer-right">
       &nbsp;
     </div>
