@@ -1,183 +1,870 @@
----
-title: "Convexification of Simplex-Constrained QPs, with an Application to Potential Games"
-description: "Optimizing an indefinite quadratic over the simplex is NP-hard. But a componentwise change of variables can render the objective concave, and whether it works is checkable by a small SDP with n+1 constraints. We characterize the tractable class and apply it to welfare maximization in potential games."
-date: 2026-03-06
-author: "Dj"
-categories: [optimization, theory, game-theory, semidefinite-programming]
-toc: true
-toc-depth: 3
----
-
-## The problem
-
-Consider the quadratic program on the simplex:
-
-$$\max_{x \in \Delta_n}\; V(x) = \tfrac{1}{2}\, x^\top Q\, x + q^\top x$$
-
-where $Q \in \mathbb{R}^{n \times n}$ is symmetric and $\Delta_n = \{x \geq 0 : \mathbf{1}^\top x = 1\}$.
-
-- If $Q \preceq 0$ (negative semidefinite), $V$ is **concave** — gradient ascent finds the global maximum.
-- If $Q \succeq 0$ (positive semidefinite), $V$ is **convex** — the maximum is at a vertex; check $n+1$ points.
-- If $Q$ is **indefinite**, neither approach works. The problem is NP-hard in general (Motzkin–Straus: max clique reduces to $\max x^\top Q x$ on $\Delta_n$).
-
-This post describes a method that handles a large subclass of the indefinite case. A **componentwise change of variables** $x_i = s_i(y_i)$ can render $V$ concave in the new coordinates, and whether such a change exists is checkable by a semidefinite program with only $n+1$ constraints.
-
----
-
-## The reparameterization
-
-We ask: **is there a smooth, componentwise map $x_i = s_i(y_i)$ that makes $V(s(y))$ concave in $y$?**
-
-If yes, then $\max_y V(s(y))$ is a concave maximization — solvable in polynomial time. The optimizer $x^* = s(y^*)$ is the global maximum of $V$ on $\Delta_n$.
-
-### The Hessian
-
-For maps $s_i$ with constant curvature $\kappa_i = s_i''/(s_i')^2$, the Hessian of $V(s(y))$ factors as:
-
-$$H(y) = S'(y) \cdot M(x) \cdot S'(y)$$
-
-where $S' = \text{diag}(s_1', \ldots, s_n')$ is positive and:
-
-$$M(x) = Q + \text{diag}\!\big(\kappa \circ \nabla V(x)\big), \qquad \nabla V(x) = Qx + q.$$
-
-Since $S' \succ 0$, concavity of $V(s(y))$ is equivalent to $M(x) \preceq 0$ for all $x \in \Delta_n$.
-
-**The feasible set stays convex.** For concave maps $s_i$ (which is the case when $\kappa_i < 0$), the reparameterized feasible set $\{y : s(y) \in \Delta_n\} = \{y \geq 0 : \sum_i s_i(y_i) = 1\}$ is convex: each $s_i$ is concave, so $\{y : \sum s_i(y_i) \leq 1\}$ is convex. The full reparameterized problem is therefore: **maximize a concave function over a convex set** — a standard convex program.
-
-### Reducing to a finite check
-
-Two key facts:
-
-1. $M(x)$ is **affine in $x$** (because $\nabla V$ is), hence **matrix-concave**.
-2. A matrix-concave function on a polytope attains its maximum eigenvalue at a vertex.
-
-The simplex $\Delta_n$ has $n + 1$ vertices. So checking $M(x) \preceq 0$ everywhere reduces to:
-
-$$\text{find}\; \kappa \;\;\text{s.t.}\;\; M(v_k) \preceq 0, \quad k = 0, 1, \ldots, n \tag{SDP}$$
-
-This is a semidefinite program with $n+1$ matrix constraints of size $n \times n$ — polynomial time.
-
-::: {.callout-note}
-**Why the simplex matters.** On a box $[0,1]^n$, the same argument requires $2^n$ vertex checks. The simplex has only $n+1$.
-
-**Matrix-concavity is what matters.** The vertex trick requires $M(x)$ to be matrix-concave — meaning each diagonal entry $M_{ii}(x)$ must be concave as a function of the **full** vector $x$, not just $x_i$. With constant $\kappa_i$, $M_{ii}(x) = Q_{ii} + \kappa_i (Q_i^\top x + q_i)$ is affine in $x$ and therefore concave. Allowing $\kappa_i$ to depend on $x_i$ makes $M_{ii}$ quadratic in $x$, and the cross-term Hessian $\partial^2 M_{ii}/\partial x_j \partial x_k = b_i(Q_{ij}\delta_{ik} + Q_{ik}\delta_{ij})$ is indefinite whenever $Q$ has off-diagonal entries. Finding reparameterization families that are richer than constant curvature while preserving matrix-concavity of $M$ remains open.
-:::
-
----
-
-## The tractable class
-
-### Definition
-
-The **tractable class** $\mathcal{T}$ is the set of $(Q, q)$ pairs for which the SDP is feasible. It has a clean structure:
-
-- **Convex** in $(Q, q)$ space — membership is efficiently testable.
-- **Grows with $\|q\|$** — as the linear term dominates, more problems become certifiable.
-- **Excludes the provably hard cases** — $q = 0$ gives the pure homogeneous QP $\max x^\top Q x$ on $\Delta_n$, which encodes max clique. These are never certifiable.
-
-### The pipeline
-
-For any $(Q, q) \in \mathcal{T}$:
-
-1. **Certify** (poly time): solve the SDP to find curvature parameters $\kappa$.
-2. **Solve** (poly time): maximize the now-concave $V(s(y))$ by gradient ascent.
-3. **Recover**: $x^* = s(y^*)$ is the global maximizer.
-
-### Limits
-
-The method cannot certify every indefinite QP — only those where the linear term $q$ is large enough relative to $Q$'s indefiniteness.
-
-**The boundary.** As $\|q\| \to 0$, the feasible set shrinks: the diagonal boost $\kappa \circ \nabla V(x)$ vanishes, and $M(x) \to Q$, which is indefinite by assumption. As $\|q\| \to \infty$, the feasible set grows: $\nabla V \approx q$ at all vertices, providing a uniformly large diagonal correction.
-
-**What remains hard.** Pure interaction games ($q = 0$), games where interactions dominate intrinsic payoffs ($\|q\| \ll \|Q\|$), and games with strongly conflicting off-diagonal structure that no diagonal correction can overcome.
-
----
-
-## Application: welfare maximization in potential games
-
-### Background
-
-A **potential game** has a scalar function $V(x)$ whose stationary points on $\Delta_n$ are exactly the Nash equilibria. When $V$ is quadratic, welfare maximization — finding the equilibrium with highest $V$ — is exactly the simplex-constrained QP above.
-
-This is NP-hard in general (Conitzer & Sandholm 2003, even inapproximable). For $(Q, q) \in \mathcal{T}$, the reparameterization solves it in polynomial time.
-
-### Example 1: traffic routing (vertex optimum)
-
-A unit mass of commuters splits among $n = 3$ routes.
-
-| Route | Description | Free-flow time | Key feature |
-|:---:|---|:---:|---|
-| 1 — Highway | Through city center | 25 min | Fast but bottleneck-prone |
-| 2 — Bypass | Six-lane ring road | 32 min | High capacity, long |
-| 3 — Local | Two-lane suburban road | 28 min | Moderate; merges with both others |
-
-$$
-Q = \begin{pmatrix} 2 & -1 & 0.5 \\ -1 & 0.5 & 1 \\ 0.5 & 1 & 1 \end{pmatrix}, \qquad q = \begin{pmatrix} 4.5 \\ 4 \\ 1 \end{pmatrix}.
-$$
-
-$Q$ is indefinite (eigenvalues $\approx +2.73, +0.54, -0.77$). After coordinate elimination, the reduced matrix $\tilde{Q}$ has $\det = -3.25$ — the indefiniteness is genuine.
-
-**Certification.** With $\kappa = -1.70$, $M(v) \prec 0$ at all three vertices of the reduced simplex. The concavified $V$ has a unique global maximum:
-
-$$x^* = (1, 0, 0), \qquad V(x^*) = 5.5.$$
-
-All commuters on the highway — the route with the best free-flow quality ($q_1 = 4.5$). Its self-congestion ($Q_{11} = 2$) is dominated by the intrinsic advantage. The complementarity $Q_{12} = -1$ with the bypass provides congestion relief, but the certificate tells us no mixed split improves on the pure highway. (See [`verify_routing_game.py`](file:///usr/local/google/home/dvij/verify_routing_game.py) for a self-contained verification script.)
-
-### Example 2: platform adoption (mixed optimum)
-
-$$
-Q = \begin{pmatrix} -3 & 3.5 & 0.5 \\ 3.5 & 3.5 & 3 \\ 0.5 & 3 & 2 \end{pmatrix}, \qquad q = \begin{pmatrix} 17 \\ 14 \\ 12 \end{pmatrix}.
-$$
-
-Platforms 1 and 2 are **synergistic** ($Q_{12} = 3.5$) — adopting both creates positive network effects. Platform 1 has diminishing returns ($Q_{11} = -3$). The reduced matrix is indefinite ($\det \tilde{Q} = -3$).
-
-**Certification.** With $\kappa = -0.3$, the NSD check passes. Gradient ascent converges to:
-
-$$x^* \approx (0.46,\; 0.54,\; 0), \qquad V(x^*) = 16.44.$$
-
-A mixed equilibrium — users split between the two synergistic platforms, nobody adopts platform 3. This optimum is not at any vertex and cannot be found by pure-strategy enumeration. The concavification certificate guarantees it is the unique global maximum.
-
-### Numerical evidence
-
-On 500 random indefinite potential games ($n = 4$, $\|q\|/\|Q\| \approx 3$):
-
-| | Count | % |
-|---|:---:|:---:|
-| Certifiably tractable | 411 | 82% |
-| Not certifiable | 89 | 18% |
-
-Of the 411 certifiable games, **29 had interior global optima** — fully mixed equilibria. The reparameterization found every one exactly, validated against brute-force global search.
-
-### Dynamics
-
-In potential games, learning dynamics (replicator, gradient play) converge to *some* Nash equilibrium — but not necessarily the welfare-maximizing one. In the certifiable class, the reparameterized $V$ is concave with a unique global maximum, so:
-
-::: {.callout-note}
-**Corollary.** For games in the certifiable class, gradient-based dynamics converge to the welfare-maximizing equilibrium from almost all initial conditions.
-:::
-
-Computational tractability and dynamical selection coincide.
-
----
-
-## Open questions
-
-**A diagonal dominance sufficient condition.** The SDP is one way to certify the tractable class. A simpler (but more conservative) sufficient condition comes from diagonal dominance: $M(x) \preceq 0$ holds whenever each diagonal entry dominates its row, i.e., $|\kappa_i| \cdot g_i(x) - Q_{ii} \geq \sum_{j \neq i} |Q_{ij}|$ for all $i$ and $x \in \Delta_n$. Since $g_i$ is affine and achieves its minimum at a vertex, this reduces to:
-
-$$\min_{v \in \text{vert}(\Delta_n)} [Qv + q]_i \;>\; \sum_j |Q_{ij}| \cdot \frac{1}{|\kappa_i|} + Q_{ii}$$
-
-In words: **each coordinate's minimum gradient (over vertices) must exceed the total absolute interaction strength of that coordinate.** This is the "linear term dominates interactions" intuition made precise. It is not tight — the SDP exploits correlations between rows — but it gives a closed-form sufficient condition. Can this gap be characterized? Is there a scaled diagonal dominance condition (à la Geršgorin with optimal scaling) that is both closed-form and tight?
-
-**Richer reparameterizations.** Constant-curvature maps give $M(x)$ affine in $x$ — hence matrix-concave, enabling the vertex trick. The natural generalization $\kappa_i(x_i) = a_i + b_i x_i$ makes $M_{ii}$ quadratic, but the Hessian $\partial^2 M_{ii}/\partial x_j \partial x_k$ is indefinite whenever $Q$ has off-diagonal entries, destroying matrix-concavity. Can a different parameterization of the maps — or a different proof strategy (e.g., SOS certificates) — extend the tractable class beyond constant curvature?
-
-**Relation to the S-lemma.** The classical S-lemma establishes joint convexity of the numerical range of a pair of quadratic forms. Reparameterization convexifies the primal objective directly. Do these approaches certify the same class, or are they fundamentally different?
-
----
-
-## References
-
-- Monderer, D. & Shapley, L.S. (1996). Potential games. *Games and Economic Behavior* 14(1), 124–143.
-- Sandholm, W.H. (2010). *Population Games and Evolutionary Dynamics.* MIT Press.
-- Conitzer, V. & Sandholm, T. (2003). Complexity results about Nash equilibria. *IJCAI*, 765–771.
-- Bomze, I.M. (1998). On standard quadratic optimization problems. *Journal of Global Optimization* 13(4), 369–387.
-- Burer, S. & Ye, Y. (2020). Exactness of Parrilo's conic approximations for copositive programs. *Mathematics of Operations Research* 45(1), 265–290.
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{cleveref}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{example}[theorem]{Example}
+
+\DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\diag}{diag}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\calP}{\mathcal{P}}
+\newcommand{\calU}{\mathcal{U}}
+\newcommand{\calM}{\mathcal{M}}
+\newcommand{\calC}{\mathcal{C}}
+
+\title{Distributionally Robust Taint Reachability\\
+for Agentic Information Flow Control}
+\author{Technical Reference}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We consider the problem of bounding the probability that sensitive data
+reaches an unsafe channel after an agent executes a sequence of shell
+commands. The taint state evolves under \emph{deterministic} Boolean
+transitions (copy, merge, delete) and \emph{stochastic} declassification
+actions that succeed with a known probability~$\gamma$ and fail with
+probability~$1-\gamma$. The initial taint state is uncertain: a PII
+detector provides marginal confidence scores
+$\ell_i \le \E[s_i[0]] \le u_i$ for each file, but we make \emph{no assumptions}
+about the joint correlations of these scores. We formalize the
+worst-case taint reachability as a distributionally robust optimization
+(DRO) problem and show it admits a polynomial-time SDP relaxation via
+degree-2 sum-of-squares (SOS) certificates. We also present a
+\emph{spectral relaxation} based on generalized eigenvalue problems
+that replaces the SDP with an eigenvalue computation, offering
+adaptive risk bounds at a fraction of the cost.
+\end{abstract}
+
+
+%% ========================================================================
+\section{Problem Setup}
+%% ========================================================================
+
+\subsection{State Variables}
+
+An agentic system operates on $N$ data objects (files, variables,
+channels). Each object $i$ has a Boolean taint indicator:
+\[
+  s_i[t] \in \{0, 1\}, \quad i = 1, \ldots, N, \quad t = 0, 1, \ldots, T,
+\]
+where $s_i[t] = 1$ means object $i$ is tainted (contains or is derived
+from sensitive data) at time $t$.
+
+\subsection{Initial Conditions (Marginal Bounds Only)}
+
+A PII detector classifies each object as sensitive or clean with
+some confidence. This yields an \emph{interval bound} on each
+marginal:
+\begin{equation}\label{eq:initial}
+  \ell_i \;\le\; \E[s_i[0]] \;\le\; u_i \qquad \forall i = 1, \ldots, N,
+\end{equation}
+where:
+\begin{itemize}
+  \item \textbf{Classified sensitive} with confidence $c$:
+        $\ell_i = c$, $u_i = 1$.
+        \\(e.g., detector says ``PII detected'' at 90\%
+        $\Rightarrow m_i \ge 0.9$.)
+  \item \textbf{Classified clean} with confidence $c$:
+        $\ell_i = 0$, $u_i = 1 - c$.
+        \\(e.g., detector says ``no PII'' at 80\%
+        $\Rightarrow m_i \le 0.2$.)
+\end{itemize}
+Crucially, we make \textbf{no assumptions} about the joint distribution
+of $(s_1[0], \ldots, s_N[0])$. The detector might use a shared model,
+the files might share content, or the detections might be arbitrarily
+correlated---we do not know and do not assume.
+
+\begin{definition}[Ambiguity Set]
+The set of all initial distributions consistent with the marginal
+interval bounds is:
+\begin{equation}\label{eq:ambiguity}
+  \calP = \left\{
+    \mu \in \Delta(\{0,1\}^N) :
+    \ell_i \le \E_\mu[s_i[0]] \le u_i \;\;\forall i
+  \right\}.
+\end{equation}
+\end{definition}
+
+\subsection{Transition Model}
+
+At each time step, the agent issues a command $a[t]$ drawn from a
+finite command vocabulary. The state evolves as:
+\begin{equation}\label{eq:transition}
+  s[t+1] = F_{a[t]}(s[t], \omega[t]),
+\end{equation}
+where $\omega[t]$ is an independent noise source used \emph{only}
+by declassification actions. Commands fall into two categories:
+
+\subsubsection{Deterministic Transitions}
+
+Most commands implement a deterministic Boolean function:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{lll}
+\toprule
+\textbf{Command} & \textbf{Semantics} & \textbf{Example} \\
+\midrule
+\textsc{Propagate} & $s_\text{dst}' = s_\text{src}$
+  & \texttt{cp src dst} \\
+\textsc{Merge} & $s_\text{dst}' = s_1 \vee s_2$
+  & \texttt{cat f1 f2 > out} \\
+\textsc{Delete} & $s_\text{target}' = 0$
+  & \texttt{rm file} \\
+\textsc{CreateClean} & $s_\text{dst}' = 0$
+  & \texttt{echo "hello" > file} \\
+\textsc{CreateTainted} & $s_\text{dst}' = 1$
+  & (unknown tool output) \\
+\textsc{Identity} & $s' = s$
+  & \texttt{ls}, \texttt{read\_file} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+For deterministic transitions, $\omega[t]$ is unused.
+
+\subsubsection{Stochastic Declassification}
+
+A declassification action on object $i$ with confidence $\gamma \in [0,1]$:
+\begin{equation}\label{eq:declassify}
+  s_i[t+1] = s_i[t] \cdot (1 - \omega[t]),
+  \qquad \omega[t] \sim \text{Ber}(\gamma).
+\end{equation}
+When $\omega = 1$ (probability $\gamma$), the file is successfully
+sanitized. When $\omega = 0$, the taint persists. We make
+\textbf{no assumption} about the dependence between $\omega[t]$
+and the state $s[t]$; the cross-moment $\E[s_i \omega]$ is a free
+variable subject to Fr\'echet bounds, just as with \textsc{Merge}.
+All other variables are unchanged.
+
+\subsubsection{Contract-Based Modeling of Arbitrary Commands}
+
+The commands above cover standard POSIX operations. For arbitrary
+agent tools (API calls, custom scripts, LLM-generated functions),
+we assign taint semantics via a \emph{state propagation contract}:
+
+\begin{definition}[State Propagation Contract]
+A contract $\calC = (\texttt{inputs}, \texttt{outputs},
+\texttt{mode}, \gamma)$ declares:
+\begin{itemize}
+  \item $\texttt{inputs} \subseteq \{1, \ldots, N\}$: objects read,
+  \item $\texttt{outputs} \subseteq \{1, \ldots, N\}$: objects written,
+  \item $\texttt{mode} \in \calM$: one of the transition types above
+        (\textsc{Propagate}, \textsc{Merge}, \textsc{Delete},
+        \textsc{Declassify}, \textsc{Identity}, \textsc{CreateClean},
+        \textsc{CreateTainted}),
+  \item $\gamma \in [0, 1]$: confidence that the tool implements the
+        declared mode correctly.
+\end{itemize}
+\end{definition}
+
+The contract maps an unknown tool to a known transition type.
+For example:
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{llll}
+\toprule
+\textbf{Tool} & \textbf{Mode} & \textbf{$\gamma$}
+  & \textbf{Effect} \\
+\midrule
+\texttt{redact\_pii(f)} & \textsc{Declassify} & 0.95
+  & $m_f' \le \min(m_f,\, 0.05)$ \\
+\texttt{sha256sum(f)} & \textsc{Declassify} & 1.0
+  & $m_f' = 0$ \\
+\texttt{translate(src, dst)} & \textsc{Propagate} & 1.0
+  & $m_\text{dst}' = m_\text{src}$ \\
+\texttt{summarize(f1, f2, out)} & \textsc{Merge} & 1.0
+  & $m_\text{out}' = m_1 + m_2 - m_{12}$ \\
+\texttt{fetch\_url(url, dst)} & \textsc{CreateTainted} & 1.0
+  & $m_\text{dst}' = 1$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+When $\gamma < 1$, the transition is a convex combination of the
+declared semantics and the worst case (\textsc{CreateTainted} on all
+outputs):
+\begin{equation}\label{eq:confidence}
+  M_c^{(\gamma)} = \gamma \cdot M_c + (1 - \gamma) \cdot
+  M_\textsc{CreateTainted}.
+\end{equation}
+
+\begin{remark}[Uncontracted Commands]
+Any command without a contract is treated conservatively as
+\textsc{CreateTainted} on all arguments appearing in output
+position (i.e., $s_\text{out}' = 1$). This ensures the framework
+is sound even for commands it has never seen.
+\end{remark}
+
+\subsection{Unsafe Set and Objective}
+
+Given a set of unsafe variables $\calU \subseteq \{1, \ldots, N\}$
+(e.g., outbound network channels), the \emph{leakage probability} is:
+\begin{equation}\label{eq:objective}
+  R^* = \sup_{\mu \in \calP} \;\;
+  \E_\mu\!\left[\max_{i \in \calU}\, s_i[T]\right]
+\end{equation}
+subject to the transition dynamics \eqref{eq:transition}.
+
+Since each $s_i \in \{0,1\}$, we have
+$\max_{i \in \calU} s_i = \mathbf{1}[\exists i \in \calU : s_i = 1]$,
+so:
+\begin{equation}\label{eq:max-is-prob}
+  \E\!\left[\max_{i \in \calU}\, s_i[T]\right]
+  = \Prob\!\left(\bigvee_{i \in \calU} s_i[T] = 1\right)
+  = \Prob(\textsc{Leak}).
+\end{equation}
+Thus $R^*$ is the worst-case probability that \emph{any} tainted
+object reaches an unsafe channel, maximized over all initial
+distributions consistent with the marginal bounds.
+
+\begin{remark}[Exact vs.\ Relaxed]
+For $|\calU| \le 2$, $\Prob(\textsc{Leak})$ is exactly representable
+in terms of first and second moments (no relaxation needed):
+\begin{align}
+  |\calU| = 1 &: \quad \Prob(\textsc{Leak}) = m_u[T], \\
+  |\calU| = 2 &: \quad \Prob(\textsc{Leak}) = m_{u_1}[T] + m_{u_2}[T]
+    - m_{u_1 u_2}[T].
+\end{align}
+For $|\calU| \ge 3$, the exact inclusion-exclusion involves higher-order
+moments. We compute a tight upper bound via the SDP dual below.
+\end{remark}
+
+%% ========================================================================
+\section{Propagating Expectations Through Transitions}
+\label{sec:propagation}
+%% ========================================================================
+
+We now derive how $\E[s_i[t]]$ and $\E[s_i[t] s_j[t]]$ transform
+under each command. Write
+$m_i[t] = \E[s_i[t]]$ and
+$m_{ij}[t] = \E[s_i[t]\, s_j[t]]$.
+
+\subsection{Deterministic Commands}
+
+\noindent\textbf{\textsc{Propagate}} ($s_\text{dst}' = s_\text{src}$):
+\begin{align}
+  m_\text{dst}' &= m_\text{src}, &
+  m_{\text{dst},k}' &= m_{\text{src},k} \;\;\forall k \ne \text{dst}.
+  \label{eq:prop-moments}
+\end{align}
+
+\noindent\textbf{\textsc{Merge}} ($s_\text{dst}' = s_1 \vee s_2$).\;
+Since $s_1 \vee s_2 = s_1 + s_2 - s_1 s_2$ on $\{0,1\}$:
+\begin{equation}\label{eq:merge-first}
+  m_\text{dst}' = m_1 + m_2 - m_{12}.
+\end{equation}
+The cross-moment $m_{12}$ is constrained by Fr\'echet bounds
+$\max(0, m_1 + m_2 - 1) \le m_{12} \le \min(m_1, m_2)$
+but is otherwise \emph{free} in our model (no correlation assumptions).
+
+For the worst-case (maximizing $m_\text{dst}'$), we take $m_{12}$ at
+its lower bound:
+\begin{equation}\label{eq:merge-worst}
+  m_\text{dst}' \le m_1 + m_2 - \max(0, m_1 + m_2 - 1)
+  = \min(m_1 + m_2,\; 1).
+\end{equation}
+
+\noindent\textbf{\textsc{Delete} / \textsc{CreateClean}}:
+$m_\text{target}' = 0$, $m_{\text{target},k}' = 0$.
+
+\noindent\textbf{\textsc{CreateTainted}}:
+$m_\text{dst}' = 1$, $m_{\text{dst},k}' = m_k$.
+
+\noindent\textbf{\textsc{Identity}}: all moments unchanged.
+
+\subsection{Declassification (DRO over Noise)}
+
+Declassification of object $i$ with confidence $\gamma$ gives
+$s_i' = s_i (1 - \omega)$ where $\E[\omega] = \gamma$. We make no
+assumption about how $\omega$ correlates with $s_i$. The
+first moment is:
+\begin{equation}\label{eq:declass-first}
+  m_i' = \E[s_i(1 - \omega)] = m_i - \E[s_i \omega].
+\end{equation}
+The cross-moment $\E[s_i \omega]$ is subject to Fr\'echet bounds:
+\begin{equation}\label{eq:declass-frechet}
+  \max(0,\, m_i + \gamma - 1) \;\le\; \E[s_i \omega]
+  \;\le\; \min(m_i,\, \gamma).
+\end{equation}
+For the worst case (maximizing $m_i'$), we minimize $\E[s_i \omega]$:
+\begin{equation}\label{eq:declass-worst}
+  m_i' \le m_i - \max(0,\, m_i + \gamma - 1)
+  = \min(m_i,\; 1 - \gamma).
+\end{equation}
+This is the \emph{same Fr\'echet machinery} used for
+\textsc{Merge}. The cross-moment with any other variable
+$k \ne i$ transforms as:
+\begin{equation}\label{eq:declass-cross}
+  m_{i,k}' = \E[s_i s_k (1 - \omega)]
+  = m_{ik} - \E[s_i s_k \omega],
+\end{equation}
+where $\E[s_i s_k \omega]$ is again a free cross-moment in the
+DRO model, subject to its own Fr\'echet bounds.
+
+Note: if one additionally assumes $\omega \perp\!\!\!\perp s$,
+then $\E[s_i \omega] = m_i \gamma$ and $m_i' = (1-\gamma) m_i$,
+which is always $\le \min(m_i, 1-\gamma)$. The DRO formulation
+subsumes this as a special case while remaining sound without
+the independence assumption.
+
+%% ========================================================================
+\section{The DRO Problem and Its SDP Relaxation}
+\label{sec:dro}
+%% ========================================================================
+
+\subsection{Compositional State at Time $T$}
+
+Given a fixed command sequence $a[0], \ldots, a[T-1]$, each
+$s_i[T]$ is a (possibly random) function of the initial state
+$s[0]$ and the declassification noise variables
+$\omega[0], \ldots, \omega[T-1]$. Since the noise is independent,
+we can take expectations over $\omega$ first:
+\[
+  \E[s_i[T]] = \E_\omega\!\left[\E_{s[0]}[s_i[T] \mid \omega]\right].
+\]
+Conditioned on $\omega$, the transitions are deterministic, so
+$s_i[T \mid \omega]$ is a Boolean function of $s[0]$.
+
+Concretely, composing the transition matrices:
+\begin{equation}\label{eq:composed}
+  \E[s_i[T]] = \mathbf{e}_i^\top
+  \left(\prod_{t=T-1}^{0} M_{a[t]}\right) \mathbf{m}[0],
+\end{equation}
+where $M_{a[t]}$ is the (deterministic or scaled) moment
+transition matrix and $\mathbf{m}[0] = (1, m_1[0], \ldots, m_N[0],
+m_{12}[0], \ldots)^\top$ is the initial moment vector.
+
+\subsection{Dual of the Moment Problem}
+
+The DRO problem \eqref{eq:objective} asks to maximize
+$\Prob(\textsc{Leak})$ over the ambiguity set. By LP duality
+(the primal has $2^N$ variables $\mu(\mathbf{s})$, one per vertex),
+the dual seeks a degree-$\le 2$ polynomial
+$f(\mathbf{s}) = \mathbf{c}^\top \boldsymbol{\phi}(\mathbf{s})$
+that dominates the leak indicator:
+\begin{equation}\label{eq:dual-general}
+  R^* \le \min_{\mathbf{c}} \;\; \mathbf{c}^\top \mathbf{b}
+  \qquad \text{s.t.} \qquad
+  f(\mathbf{s}) \ge \mathbf{1}_\textsc{Leak}(\mathbf{s})
+  \;\;\forall \mathbf{s} \in \{0,1\}^N,
+\end{equation}
+where $\boldsymbol{\phi}(\mathbf{s}) = (1, s_1, \ldots, s_N,
+s_1 s_2, \ldots)^\top$ is the moment basis and $\mathbf{b}$
+encodes the marginal bounds.
+
+\subsection{Decomposing the Leak Indicator}
+
+The key observation: since $\mathbf{s} \in \{0,1\}^N$,
+\begin{equation}\label{eq:max-simplex}
+  \max_{i \in \calU} s_i
+  = \sup_{\boldsymbol{\alpha} \in \Delta_{|\calU|}}
+    \sum_{i \in \calU} \alpha_i s_i,
+\end{equation}
+where $\Delta_{|\calU|}$ is the simplex. Therefore the constraint
+$f(\mathbf{s}) \ge \mathbf{1}_\textsc{Leak}(\mathbf{s})$
+is \textbf{equivalent} to:
+\begin{equation}\label{eq:decomposed}
+  f(\mathbf{s}) \ge s_i \qquad \forall \mathbf{s} \in \{0,1\}^N,
+  \quad \forall i \in \calU.
+\end{equation}
+
+\begin{proof}[Equivalence]
+$(\Leftarrow)$: If any $s_i = 1$ ($i \in \calU$), then
+$f(\mathbf{s}) \ge s_i = 1 = \mathbf{1}_\textsc{Leak}$.
+If all $s_i = 0$, then $f(\mathbf{s}) \ge 0$ (from the non-negativity
+certificate below). $(\Rightarrow)$: If $\mathbf{1}_\textsc{Leak} = 1$,
+then $f \ge 1 \ge s_i$. If $\mathbf{1}_\textsc{Leak} = 0$, then
+all $s_i = 0$, so $f \ge 0 = s_i$.
+\end{proof}
+
+Unlike the sum relaxation
+$f(\mathbf{s}) \ge \sum_{i \in \calU} s_i$
+(which is a \emph{single, strictly stronger} constraint), the
+decomposition \eqref{eq:decomposed} uses $|\calU|$ \emph{weaker}
+constraints---yielding a \emph{larger} feasible set and hence a
+\emph{tighter} (smaller) upper bound on~$R^*$.
+
+\subsection{SOS Certificates (Vertex-Free)}
+
+Each constraint in \eqref{eq:decomposed} is a polynomial
+non-negativity condition on $\{0,1\}^N$. We certify it with a
+degree-2 SOS decomposition (\Cref{thm:sos-cert} below).
+
+\begin{theorem}[Degree-2 SOS Certificate]
+\label{thm:sos-cert}
+A degree-$\le 2$ polynomial $p(\mathbf{s}) \ge 0$ on $\{0,1\}^N$
+if there exists a PSD Gram matrix $Q \in \mathcal{S}^{N+1}_+$ such
+that, writing $\hat{\mathbf{s}} = (1, s_1, \ldots, s_N)^\top$:
+\[
+  p(\mathbf{s}) = \hat{\mathbf{s}}^\top Q \, \hat{\mathbf{s}}
+  + \sum_{i=1}^{N} \underbrace{Q_{1+i,1+i}}_{\lambda_i}
+  \cdot s_i(1 - s_i).
+\]
+Matching polynomial coefficients eliminates the
+$\lambda_i = Q_{1+i,1+i}$ and yields linear constraints on~$Q$.
+\end{theorem}
+
+\subsection{Complete SDP Formulation}
+
+\begin{equation}\label{eq:sdp-tight}
+\boxed{
+\begin{aligned}
+  R^* \le \bar{R} = \min_{\mathbf{c},\, Q_0,\, Q_1, \ldots, Q_{|\calU|}}
+  \;\; & \mathbf{c}^\top \mathbf{b} \\[3pt]
+  \text{s.t.} \;\;
+  & \textsc{CoeffMatch}\bigl(
+      \mathbf{c}^\top \boldsymbol{\phi}(\mathbf{s}),\; Q_0\bigr)
+    & & \text{(non-negativity)} \\
+  & \textsc{CoeffMatch}\bigl(
+      \mathbf{c}^\top \boldsymbol{\phi}(\mathbf{s}) - s_i,\; Q_i\bigr)
+    \quad \forall i \in \calU
+    & & \text{(leak detection)} \\
+  & Q_0, Q_1, \ldots, Q_{|\calU|} \succeq 0
+\end{aligned}
+}
+\end{equation}
+
+Here $\mathbf{b}$ encodes the marginal bounds: for each coefficient
+$c_j$, the corresponding entry $b_j$ is chosen to make
+$\mathbf{c}^\top \mathbf{b}$ an upper bound (i.e., $b_j = u_j$
+when $c_j > 0$ via LP duality of the box constraints).
+
+\begin{proposition}[Complexity]
+The SDP \eqref{eq:sdp-tight} has $d = O(N^2)$ variables
+($\mathbf{c}$), $|\calU| + 1$ PSD cones of size $(N+1)$, and
+$O(|\calU| \cdot N^2)$ coefficient-matching linear constraints.
+Interior-point solvers solve this in $O(|\calU| \cdot N^{3.5})$ time.
+\end{proposition}
+
+\begin{remark}[Comparison with Sum Relaxation]
+Replacing \eqref{eq:decomposed} with the single constraint
+$f(\mathbf{s}) \ge \sum_i s_i$ gives $\bar{R}_\text{sum} \ge \bar{R}$.
+The gap can be up to a factor of $|\calU|$ (e.g., when all marginals
+equal $p$ and $|\calU| p \ge 1$, the sum bound saturates at $1$ while
+the tight bound is $\min(1, |\calU| p - \binom{|\calU|}{2} p^2 + \cdots)$).
+\end{remark}
+
+\subsection{When Cross-Moments Are Irrelevant}
+
+For many common command sequences, the composed transition
+$M_\text{comp}$ only depends on the first-order moments $m_i$, not
+the cross-moments $m_{ij}$. This happens when:
+\begin{itemize}
+  \item All commands are \textsc{Propagate}, \textsc{Delete},
+        \textsc{Identity}, or \textsc{Declassify} (all degree-1
+        operations),
+  \item No \textsc{Merge} operation appears in the sequence.
+\end{itemize}
+
+In this case, the SDP reduces to $N$ independent scalar problems:
+\begin{equation}\label{eq:scalar}
+  R^* = \max_{i \in \calU} [\text{coefficient}_i \cdot u_i],
+\end{equation}
+which is $O(N)$ and closed-form.
+
+\subsection{The Effect of \textsc{Merge}}
+
+\textsc{Merge} is the only deterministic command that introduces
+dependence on cross-moments (because $s_1 \vee s_2 = s_1 + s_2 -
+s_1 s_2$). When a merge appears, the LP must optimize over the
+cross-moment $m_{12}$ subject to Fr\'echet bounds.
+
+\begin{example}
+Consider $N = 3$: files $A$, $B$, and \texttt{OUT} $\in \calU$.
+The agent executes: \texttt{cat A B > OUT}.
+
+The composed transition gives: $m_\text{OUT}[1] = m_A + m_B - m_{AB}$.
+
+The DRO problem is:
+\[
+  R^* = \max_{\ell_A \le m_A \le u_A,\; \ell_B \le m_B \le u_B}
+  \max_{\max(0, m_A + m_B - 1) \le m_{AB} \le \min(m_A, m_B)}
+  m_A + m_B - m_{AB}.
+\]
+The inner max minimizes $m_{AB}$:
+$m_{AB}^* = \max(0, m_A + m_B - 1)$, giving
+$m_\text{OUT}^* = \min(m_A + m_B, 1)$.
+
+The outer max sets $m_A = u_A$, $m_B = u_B$:
+\[
+  R^* = \min(u_A + u_B, 1).
+\]
+This is exactly the union bound, and it is \emph{tight}---there
+exists a joint distribution achieving it (maximally anti-correlated).
+\end{example}
+
+\begin{example}
+Now add a declassification: \texttt{redact A} ($\gamma = 0.9$),
+then \texttt{cat A B > OUT}.
+
+By~\eqref{eq:declass-worst}: $m_A' \le \min(m_A,\, 0.1)$.
+
+After merge: $m_\text{OUT} = m_A' + m_B - m_{A'B}
+\le \min(m_A' + m_B,\, 1)$.
+
+The DRO bound optimizes over both $m_A' \le \min(u_A, 0.1)$
+and the merge cross-moment. Since $u_A = 0.8$, we have
+$m_A' \le 0.1$ and:
+\[
+  R^* = \min(0.1 + u_B, 1).
+\]
+With $u_B = 0.6$: $R^* = 0.7$.
+Compare with the independence-based bound: $\min(0.1 u_A + u_B, 1)
+= \min(0.08 + 0.6, 1) = 0.68$. The DRO bound is slightly more
+conservative but requires no modeling assumption on the
+declassification noise.
+\end{example}
+
+%% ========================================================================
+\section{SDP Strengthening (Moment Matrix Relaxation)}
+\label{sec:sdp}
+%% ========================================================================
+
+The LP \eqref{eq:dual-general} uses only the Fr\'echet bounds on
+cross-moments. A tighter relaxation uses the \emph{moment matrix}:
+
+\begin{definition}[Moment Matrix]
+The $(N+1) \times (N+1)$ moment matrix is:
+\begin{equation}\label{eq:moment-matrix}
+  \mathbf{Y} = \E\!\left[
+    \hat{\mathbf{s}} \hat{\mathbf{s}}^\top
+  \right], \qquad
+  \hat{\mathbf{s}} = (1, s_1, \ldots, s_N)^\top.
+\end{equation}
+A necessary condition for $\mathbf{Y}$ to correspond to a valid
+distribution is $\mathbf{Y} \succeq 0$.
+\end{definition}
+
+Adding $\mathbf{Y} \succeq 0$ to \eqref{eq:dual-general} yields an
+SDP that is strictly tighter than the LP: it excludes moment vectors
+that satisfy Fr\'echet bounds individually but cannot arise from any
+joint distribution.
+
+\begin{equation}\label{eq:sdp}
+\boxed{
+\begin{aligned}
+  R^* \le \bar{R}_\text{SDP} = \max_{\mathbf{m}[0],\, \mathbf{Y}} \quad
+  & \sum_{i \in \calU}
+    \mathbf{e}_i^\top M_\text{comp} \, \mathbf{m}[0] \\
+  \text{s.t.} \quad
+  & \ell_i \le m_i \le u_i \quad \forall i \\
+  & Y_{0,0} = 1, \; Y_{0,i} = m_i, \; Y_{i,j} = m_{ij} \\
+  & Y_{i,i} = m_i \quad \forall i
+    & & (s_i^2 = s_i) \\
+  & \mathbf{Y} \succeq 0
+\end{aligned}
+}
+\end{equation}
+
+\begin{proposition}
+For $N \le 2$, the LP and SDP bounds coincide. For $N \ge 3$, the
+SDP can be strictly tighter (it captures constraints from the PSD
+condition that the pairwise Fr\'echet bounds miss).
+\end{proposition}
+
+%% ========================================================================
+\section{Online Shield Protocol}
+\label{sec:shield}
+%% ========================================================================
+
+\noindent\textbf{Algorithm: Distributionally Robust Taint Shield}
+\begin{quote}
+\textbf{Input:} Variables $\{1, \ldots, N\}$, unsafe set $\calU$,
+tolerance $\varepsilon$ \\[2pt]
+$\mathbf{m}[0] \gets (\ell_1, u_1, \ldots, \ell_N, u_N)$ from PII detector \\[2pt]
+\textbf{for each} proposed command $a_t$:
+\begin{enumerate}
+  \item Compile transition matrix $M_{a_t}$ from contract
+  \item Compute tentative next moments
+        $\mathbf{m}' = M_{a_t} \, \mathbf{m}[t]$
+  \item Solve the SDP \eqref{eq:sdp-tight}
+        to obtain $\bar{R}$
+  \item \textbf{if} $\bar{R} \le \varepsilon$:
+        \textsc{Allow}, commit $\mathbf{m}[t+1] = \mathbf{m}'$
+  \item \textbf{else}: \textsc{Block}, suggest safe fallback
+        (e.g., declassify the offending source)
+\end{enumerate}
+\end{quote}
+
+\begin{theorem}[Soundness]
+\label{thm:soundness}
+If the shield allows a command sequence,
+then for \emph{every} initial distribution $\mu \in \calP$
+and \emph{every} realization of the declassification noise:
+\[
+  \Prob_\mu(\textsc{Leak})
+  = \E_\mu\!\left[\max_{i \in \calU}\, s_i[T]\right]
+  \le \bar{R} \le \varepsilon.
+\]
+\end{theorem}
+
+\begin{proof}
+The shield allows only when $\bar{R} \le \varepsilon$.
+By LP duality of the moment problem (strong duality holds since the
+primal is feasible and bounded), $\bar{R} \ge R^*$.
+Since $R^* = \sup_\mu \Prob_\mu(\textsc{Leak})$, we have
+$\Prob_\mu(\textsc{Leak}) \le R^* \le \bar{R} \le \varepsilon$ for all
+$\mu \in \calP$.
+\end{proof}
+
+%% ========================================================================
+\section{Online Spectral Relaxation}
+\label{sec:spectral}
+%% ========================================================================
+
+The online SDP (\Cref{sec:shield}) adapts to the current state but
+requires an interior-point solver at $O(|\calU| \cdot N^{3.5})$ per
+command. We now present a \emph{spectral relaxation} that also adapts
+to the current state but replaces the SDP solver with eigenvalue
+computations, at the cost of a potentially more conservative bound.
+
+\subsection{Block-Diagonal Gram Matrices}
+
+Consider a degree-$\le 2$ polynomial
+$p(\mathbf{s}) = \alpha_0 + \sum_{j=1}^N \alpha_j s_j + \sum_{1 \le j < k \le N} \alpha_{jk} s_j s_k$
+and the SOS certificate from \Cref{thm:sos-cert}:
+\[
+  p(\mathbf{s}) = \hat{\mathbf{s}}^\top Q \, \hat{\mathbf{s}}
+  + \sum_{i=1}^N Q_{1+i,1+i} \cdot s_i(1 - s_i),
+  \qquad Q \in \mathcal{S}^{N+1}_+.
+\]
+The coefficient-matching conditions
+(\Cref{thm:sos-cert}) relate $Q$ to $p$ as:
+\begin{equation}\label{eq:coeff-match-explicit}
+  Q_{0,0} = \alpha_0, \qquad
+  2 Q_{0,j} + Q_{j,j} = \alpha_j \;\;\forall j \ge 1, \qquad
+  2 Q_{j,k} = \alpha_{jk} \;\;\forall 1 \le j < k \le N.
+\end{equation}
+The off-diagonal entries $Q_{j,k}$ ($j,k \ge 1$, $j \ne k$)
+are determined, but the {\bfseries diagonal entries
+$Q_{j,j}$ ($j \ge 1$) are free parameters}, with $Q_{0,j}$
+then fixed by $Q_{0,j} = (\alpha_j - Q_{j,j})/2$.
+
+\begin{definition}[Canonical Block-Diagonal Choice]
+\label{def:canonical-gram}
+Set $Q_{j,j} = \alpha_j$ for all $j \ge 1$. Then $Q_{0,j} = 0$
+for all $j \ge 1$, and $Q$ becomes \textbf{block-diagonal}:
+\begin{equation}\label{eq:block-gram}
+  Q = \begin{pmatrix} \alpha_0 & \mathbf{0}^\top \\ \mathbf{0} & A(p) \end{pmatrix},
+\end{equation}
+where $A(p) \in \R^{N \times N}$ is the symmetric matrix:
+\begin{equation}\label{eq:Ap-def}
+  A(p)_{j,j} = \alpha_j, \qquad
+  A(p)_{j,k} = \tfrac{1}{2}\,\alpha_{jk} \quad (j \ne k).
+\end{equation}
+\end{definition}
+
+\begin{lemma}[Correctness of the canonical choice]
+\label{lem:canonical-correct}
+Writing $\hat{\mathbf{s}} = (1, s_1, \ldots, s_N)^\top$ and $Q$ as
+in~\eqref{eq:block-gram}:
+\[
+  \hat{\mathbf{s}}^\top Q \, \hat{\mathbf{s}}
+  = \alpha_0 + \sum_j \alpha_j s_j^2 + \sum_{j<k} \alpha_{jk} s_j s_k.
+\]
+Adding the correction terms $\sum_j Q_{j,j} \cdot s_j(1-s_j)
+= \sum_j \alpha_j (s_j - s_j^2)$ gives
+$p(\mathbf{s}) = \alpha_0 + \sum_j \alpha_j s_j
++ \sum_{j<k} \alpha_{jk} s_j s_k$. \qed
+\end{lemma}
+
+\begin{proposition}[Spectral Certificate]
+\label{prop:spectral-cert}
+$Q \succeq 0$ if and only if $\alpha_0 \ge 0$ and $A(p) \succeq 0$
+(by the block-diagonal structure~\eqref{eq:block-gram}).
+Therefore:
+\begin{equation}\label{eq:spectral-cert}
+  \alpha_0 \ge 0 \;\;\text{and}\;\;
+  \lambda_{\min}\!\bigl(A(p)\bigr) \ge 0
+  \quad\Longrightarrow\quad
+  p(\mathbf{s}) \ge 0 \;\;\forall\, \mathbf{s} \in \{0,1\}^N.
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+A block-diagonal matrix $\diag(\alpha_0, A(p))$ is PSD iff each block
+is PSD. The scalar $\alpha_0 \ge 0$ is its own block. By
+\Cref{thm:sos-cert}, $Q \succeq 0$ certifies $p \ge 0$ on
+$\{0,1\}^N$.
+\end{proof}
+
+\begin{remark}[Sufficient but not necessary]
+The implication~\eqref{eq:spectral-cert} is \textbf{sufficient but not
+necessary}: the full SOS SDP~\eqref{eq:sdp-tight} optimizes over all
+$Q_{j,j} \ge 0$, whereas the canonical choice fixes $Q_{j,j} = \alpha_j$.
+This restricts the Gram matrix to a single point in the feasible set,
+potentially rejecting polynomials that would pass the full SOS test
+with a different diagonal.
+\end{remark}
+
+\subsection{Explicit Spectral Formulation for the DRO Problem}
+
+We now apply \Cref{prop:spectral-cert} to each constraint
+in~\eqref{eq:sdp-tight}. Write the certificate polynomial as
+$f(\mathbf{s}) = c_0 + \sum_{j=1}^N c_j\, s_j + \sum_{1 \le j < k \le N}
+c_{jk}\, s_j s_k = \mathbf{c}^\top \boldsymbol{\phi}(\mathbf{s})$.
+
+\paragraph{Non-negativity certificate ($p_0$).}
+The polynomial $p_0(\mathbf{s}) = f(\mathbf{s})$ has coefficients
+$\alpha_0 = c_0$, $\alpha_j = c_j$, $\alpha_{jk} = c_{jk}$.
+The certificate matrix is:
+\begin{equation}\label{eq:A0}
+  A_0 \in \R^{N \times N}, \qquad
+  (A_0)_{j,j} = c_j, \qquad
+  (A_0)_{j,k} = \tfrac{1}{2} c_{jk} \;\;(j \ne k).
+\end{equation}
+
+\paragraph{Leak-detection certificate ($p_i$, $i \in \calU$).}
+The polynomial $p_i(\mathbf{s}) = f(\mathbf{s}) - s_i$ has coefficients
+$\alpha_0 = c_0$, $\alpha_j = c_j - \delta_{ij}$, $\alpha_{jk} = c_{jk}$.
+The certificate matrix is:
+\begin{equation}\label{eq:Ai}
+  A_i \in \R^{N \times N}, \qquad
+  (A_i)_{j,j} = c_j - \delta_{ij}, \qquad
+  (A_i)_{j,k} = \tfrac{1}{2} c_{jk} \;\;(j \ne k).
+\end{equation}
+In other words, $A_i = A_0 - \mathbf{e}_i \mathbf{e}_i^\top$, where
+$\mathbf{e}_i$ is the $i$-th standard basis vector.
+
+\paragraph{Complete spectral SDP.}
+Substituting~\eqref{eq:A0}--\eqref{eq:Ai} into
+\Cref{prop:spectral-cert} and optimizing over $\mathbf{c}$:
+
+\begin{equation}\label{eq:spectral-sdp}
+\boxed{
+\begin{aligned}
+  R^* \le \bar{R}_\text{spec} = \min_{\mathbf{c}} \quad
+  & \mathbf{c}^\top \mathbf{b} \\[3pt]
+  \text{s.t.} \quad
+  & c_0 \ge 0 \\
+  & A_0(\mathbf{c}) \succeq 0
+    & & \text{(non-negativity)} \\
+  & A_0(\mathbf{c}) - \mathbf{e}_i \mathbf{e}_i^\top \succeq 0
+    \quad \forall i \in \calU
+    & & \text{(leak detection)}
+\end{aligned}
+}
+\end{equation}
+
+\begin{proposition}[Complexity]\label{prop:spectral-complexity}
+The spectral SDP~\eqref{eq:spectral-sdp} has:
+\begin{itemize}
+  \item $d = 1 + N + \binom{N}{2}$ variables (the entries of $\mathbf{c}$),
+  \item $|\calU| + 1$ PSD cones of size~$N$,
+  \item 1 scalar inequality ($c_0 \ge 0$).
+\end{itemize}
+Compare with the full SOS SDP~\eqref{eq:sdp-tight}, which has
+$d + (|\calU|+1) \cdot \binom{N+1}{2}$ variables and
+$|\calU|+1$ PSD cones of size $N+1$.
+
+The spectral formulation
+eliminates all $\binom{N+1}{2}$ auxiliary Gram-matrix entries
+per constraint, since the Gram matrix $Q$ is fully determined by
+$\mathbf{c}$ via~\eqref{eq:block-gram}.
+\end{proposition}
+
+\paragraph{Eigenvalue-based feasibility check.}
+For a {\bfseries fixed} candidate $\mathbf{c}$ (e.g., obtained from a
+previous iteration or a heuristic), all constraints
+in~\eqref{eq:spectral-sdp} can be checked by computing:
+\begin{enumerate}
+  \item $c_0 \ge 0$ (scalar comparison),
+  \item $\lambda_{\min}(A_0)$ via Lanczos
+        ($A_0$ is $N \times N$, cost $O(N^2 k)$),
+  \item $\lambda_{\min}(A_0 - \mathbf{e}_i \mathbf{e}_i^\top)$
+        for each $i \in \calU$ (rank-1 downdate of $A_0$, each
+        $O(N^2 k)$ or cheaper via Cauchy interlacing).
+\end{enumerate}
+Total: $O(|\calU| \cdot N^2 k)$ where $k$ is the number of Lanczos
+iterations.
+
+\begin{proposition}[Bound Ordering]
+\label{prop:spectral-ordering}
+$R^* \le \bar{R}_\text{SOS} \le \bar{R}_\text{spec}$.
+The spectral bound is a valid (but potentially looser) upper bound
+on the leakage probability. If $\bar{R}_\text{spec} \le \varepsilon$,
+then $\Prob_\mu(\textsc{Leak}) \le \varepsilon$ for all $\mu \in \calP$.
+\end{proposition}
+
+\begin{proof}
+The feasible set of~\eqref{eq:spectral-sdp} is a subset of the feasible
+set of~\eqref{eq:sdp-tight}: any $\mathbf{c}$ feasible for the spectral
+SDP induces a specific $Q \succeq 0$ (via the canonical
+choice~\eqref{eq:block-gram}) that is feasible for the SOS SDP.
+The converse may fail because the SOS SDP can use different diagonal
+entries. Since the feasible set is smaller, the minimum of
+$\mathbf{c}^\top \mathbf{b}$ is at least as large:
+$\bar{R}_\text{spec} \ge \bar{R}_\text{SOS} \ge R^*$.
+\end{proof}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{llll}
+\toprule
+\textbf{Method}
+  & \textbf{Per-command cost}
+  & \textbf{Adaptive?}
+  & \textbf{Bound quality} \\
+\midrule
+Spectral relaxation~\eqref{eq:spectral-sdp}
+  & $O(|\calU| \cdot N^2 k)$ eigenvalues
+  & Yes
+  & Upper bound (conservative) \\
+SOS SDP~\eqref{eq:sdp-tight}
+  & $O(|\calU| \cdot N^{3.5})$ interior-point
+  & Yes
+  & Upper bound (tightest) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{remark}[Growing File Sets]
+When $N$ is unknown or changes at runtime,
+the matrix $A_0(\mathbf{c})$ is assembled from the current
+coefficient vector and transition matrices.
+No offline precomputation is invalidated when $N$ changes.
+\end{remark}
+
+\begin{remark}[Hierarchy~\cite{moreno2025}]
+The canonical choice $Q_{j,j} = \alpha_j$ is the simplest spectral
+certificate. Tighter bounds can be obtained by optimizing
+the free diagonal entries $Q_{j,j}$, which adds $N$ scalar variables
+per constraint but keeps the cones at size~$N$. In the extreme,
+optimizing all entries of $Q$ recovers the full SOS
+SDP~\eqref{eq:sdp-tight}. The spectral framework
+of~\cite{moreno2025} provides a principled hierarchy interpolating
+between these extremes.
+\end{remark}
+
+\begin{thebibliography}{9}
+\bibitem{lasserre2001} J.~B.~Lasserre, ``Global optimization with
+  polynomials and the problem of moments,'' \emph{SIAM J.\ Optim.},
+  11(3):796--817, 2001.
+\bibitem{sherali1990} H.~D.~Sherali and W.~P.~Adams, ``A hierarchy of
+  relaxations \ldots for zero-one programming,'' \emph{SIAM J.\ Discrete
+  Math.}, 3(3):411--430, 1990.
+\bibitem{prajna2004} S.~Prajna and A.~Jadbabaie, ``Safety verification of
+  hybrid systems using barrier certificates,'' \emph{HSCC}, 2004.
+\bibitem{wiesemann2014} W.~Wiesemann, D.~Kuhn, M.~Sim,
+  ``Distributionally robust convex optimization,''
+  \emph{Operations Research}, 62(6):1358--1376, 2014.
+\bibitem{moreno2025} E.~Moreno and V.~Chandrasekaran, ``Spectral
+  methods for polynomial optimization,'' \emph{arXiv:2507.16272}, 2025.
+\end{thebibliography}
+
+\end{document}
