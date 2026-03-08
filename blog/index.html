@@ -585,51 +585,9 @@ Note
 </section>
 <section id="the-global-optimum" class="level3">
 <h3 class="anchored" data-anchor-id="the-global-optimum">The global optimum</h3>
-<p>With certification in hand, apply the concave reparameterization and run gradient ascent on <span class="math inline">V(s(y))</span>. Since <span class="math inline">V</span> is now concave, there is a unique global maximum. For this instance:</p>
+<p>With certification in hand, apply the concave reparameterization and run gradient ascent on <span class="math inline">V(s(y))</span>. Since <span class="math inline">V</span> is now globally concave, there is a <strong>unique</strong> local (and therefore global) maximum:</p>
 <p><span class="math display">x^* = (1, 0, 0), \qquad V(x^*) = 5.5.</span></p>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 30%">
-<col style="width: 38%">
-<col style="width: 30%">
-</colgroup>
-<thead>
-<tr class="header">
-<th style="text-align: left;">Traffic split</th>
-<th style="text-align: center;"><span class="math inline">V</span></th>
-<th style="text-align: left;">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: left;"><span class="math inline">(1, 0, 0)</span> — all highway</td>
-<td style="text-align: center;"><span class="math inline">5.50</span></td>
-<td style="text-align: left;"><strong>Global optimum</strong></td>
-</tr>
-<tr class="even">
-<td style="text-align: left;"><span class="math inline">(0, 1, 0)</span> — all bypass</td>
-<td style="text-align: center;"><span class="math inline">4.25</span></td>
-<td style="text-align: left;"><span class="math inline">23\%</span> worse</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;"><span class="math inline">(\tfrac{1}{2}, \tfrac{1}{2}, 0)</span> — highway/bypass</td>
-<td style="text-align: center;"><span class="math inline">4.31</span></td>
-<td style="text-align: left;">Complementarity helps, but free-flow loss dominates</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;"><span class="math inline">(\tfrac{1}{3}, \tfrac{1}{3}, \tfrac{1}{3})</span> — equal split</td>
-<td style="text-align: center;"><span class="math inline">3.42</span></td>
-<td style="text-align: left;">Local road’s cross-congestion (<span class="math inline">Q_{23}=1</span>) drags welfare down</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;"><span class="math inline">(0, 0, 1)</span> — all local</td>
-<td style="text-align: center;"><span class="math inline">1.50</span></td>
-<td style="text-align: left;"><span class="math inline">73\%</span> worse — worst equilibrium</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Physical interpretation.</strong> The highway wins because its free-flow quality (<span class="math inline">q_1 = 4.5</span>) is so dominant that even its high self-congestion (<span class="math inline">Q_{11} = 2</span>) cannot overcome the advantage. Mixing in the bypass looks tempting — the complementarity <span class="math inline">Q_{12} = -1</span> provides congestion relief — but the bypass’s lower free-flow quality (<span class="math inline">q_2 = 4</span>) costs more than the relief gains. Mixing in the local road is punished by cross-congestion with both other routes (<span class="math inline">Q_{13} = 0.5</span>, <span class="math inline">Q_{23} = 1</span>) and its poor intrinsic quality (<span class="math inline">q_3 = 1</span>).</p>
-<p>The SDP certifies that <strong>no other equilibrium — on any face or in the interior of the simplex — achieves higher welfare.</strong> Without this certificate, globally optimizing an indefinite QP on <span class="math inline">\Delta_n</span> requires checking KKT conditions on exponentially many faces. (See <a href="file:///usr/local/google/home/dvij/verify_routing_game.py"><code>verify_routing_game.py</code></a> for a self-contained script that verifies all numerical claims.)</p>
+<p>All commuters on the highway — the route with the best free-flow quality (<span class="math inline">q_1 = 4.5</span>). Its high self-congestion (<span class="math inline">Q_{11} = 2</span>) is dominated by the intrinsic advantage. Mixing in the bypass might seem tempting — the complementarity <span class="math inline">Q_{12} = -1</span> provides congestion relief — but the certificate tells us no mixed split improves on the pure highway. (See <a href="file:///usr/local/google/home/dvij/verify_routing_game.py"><code>verify_routing_game.py</code></a> for a self-contained script that verifies all numerical claims.)</p>
 <hr>
 </section>
 </section>
@@ -676,9 +634,9 @@ Q = \begin{pmatrix} -3 &amp; 3.5 &amp; 0.5 \\ 3.5 &amp; 3.5 &amp; 3 \\ 0.5 &amp;
 </section>
 <section id="the-optimum" class="level3">
 <h3 class="anchored" data-anchor-id="the-optimum">The optimum</h3>
-<p>The welfare-maximizing equilibrium is <strong>not</strong> at any vertex:</p>
+<p>Gradient ascent in the reparameterized space converges to the unique global maximum:</p>
 <p><span class="math display">x^* \approx (0.46,\; 0.54,\; 0), \qquad V(x^*) = 16.44.</span></p>
-<p>Users split roughly half-and-half between the two synergistic platforms; nobody adopts platform 3. Compare with the best vertex <span class="math inline">(0,1,0)</span> at <span class="math inline">V = 15.75</span> — the mixed strategy gains <span class="math inline">4\%</span> from exploiting the cross-platform synergy <span class="math inline">Q_{12} = 3.5</span>. No vertex enumeration finds this optimum; the reparameterization does.</p>
+<p>Users split roughly half-and-half between the two synergistic platforms; nobody adopts platform 3. This mixed equilibrium is not at any vertex — it cannot be found by evaluating <span class="math inline">V</span> at pure strategies. The concavification certificate guarantees this is the unique global optimum.</p>
 <hr>
 </section>
 </section>
