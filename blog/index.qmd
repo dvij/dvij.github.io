@@ -42,6 +42,8 @@ $$M(x) = Q + \text{diag}\!\big(\kappa \circ \nabla V(x)\big), \qquad \nabla V(x)
 
 Since $S' \succ 0$, concavity of $V(s(y))$ is equivalent to $M(x) \preceq 0$ for all $x \in \Delta_n$.
 
+**The feasible set stays convex.** For concave maps $s_i$ (which is the case when $\kappa_i < 0$), the reparameterized feasible set $\{y : s(y) \in \Delta_n\} = \{y \geq 0 : \sum_i s_i(y_i) = 1\}$ is convex: each $s_i$ is concave, so $\{y : \sum s_i(y_i) \leq 1\}$ is convex. The full reparameterized problem is therefore: **maximize a concave function over a convex set** — a standard convex program.
+
 ### Reducing to a finite check
 
 Two key facts:
@@ -56,9 +58,9 @@ $$\text{find}\; \kappa \;\;\text{s.t.}\;\; M(v_k) \preceq 0, \quad k = 0, 1, \ld
 This is a semidefinite program with $n+1$ matrix constraints of size $n \times n$ — polynomial time.
 
 ::: {.callout-note}
-**Why the simplex matters.** On a box $[0,1]^n$, the same argument requires $2^n$ vertex checks. The simplex has only $n+1$. The lean geometry of the feasible set is what makes the method efficient.
+**Why the simplex matters.** On a box $[0,1]^n$, the same argument requires $2^n$ vertex checks. The simplex has only $n+1$.
 
-**Matrix-concavity is what matters.** The vertex trick does not require $M(x)$ to be affine — only matrix-concave. Since $M(x)$ modifies only the diagonal of $Q$, matrix-concavity reduces to each diagonal entry $M_{ii}(x)$ being concave in $x$. With constant curvature $\kappa_i$ these entries are affine (a special case), but richer reparameterizations where $\kappa_i$ depends on $x_i$ can produce concave diagonals while preserving the finite check.
+**Matrix-concavity is what matters.** The vertex trick does not require $M(x)$ to be affine — only matrix-concave. Since $M(x)$ modifies only the diagonal of $Q$, matrix-concavity reduces to each diagonal entry $M_{ii}(x)$ being concave in $x$. With constant $\kappa_i$ these entries are affine (a special case), but allowing $\kappa_i$ to depend on $x_i$ can produce **concave but nonlinear** diagonals while preserving the $n+1$ vertex check. For example, in the platform game below (Example 2), variable curvature $\kappa_2(x_2) = -3.0 + 0.1\,x_2$ certifies the game: $M_{22}(x)$ is quadratic in $x$ but concave (since $\tilde{Q}_{22} < 0$, the coefficient of $x_2^2$ is negative), and the NSD check at $n+1$ vertices remains valid.
 :::
 
 ---
