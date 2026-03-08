@@ -349,8 +349,6 @@ window.Quarto = {
   </ul></li>
   <li><a href="#the-tractable-class" id="toc-the-tractable-class" class="nav-link" data-scroll-target="#the-tractable-class">The tractable class</a>
   <ul class="collapse">
-  <li><a href="#definition" id="toc-definition" class="nav-link" data-scroll-target="#definition">Definition</a></li>
-  <li><a href="#the-pipeline" id="toc-the-pipeline" class="nav-link" data-scroll-target="#the-pipeline">The pipeline</a></li>
   <li><a href="#limits" id="toc-limits" class="nav-link" data-scroll-target="#limits">Limits</a></li>
   </ul></li>
   <li><a href="#application-welfare-maximization-in-potential-games" id="toc-application-welfare-maximization-in-potential-games" class="nav-link" data-scroll-target="#application-welfare-maximization-in-potential-games">Application: welfare maximization in potential games</a>
@@ -487,30 +485,24 @@ Note
 </section>
 <section id="the-tractable-class" class="level2">
 <h2 class="anchored" data-anchor-id="the-tractable-class">The tractable class</h2>
-<section id="definition" class="level3">
-<h3 class="anchored" data-anchor-id="definition">Definition</h3>
 <p>The <strong>tractable class</strong> <span class="math inline">\mathcal{T}</span> is the set of <span class="math inline">(Q, q)</span> pairs for which the SDP is feasible.</p>
 <ul>
 <li><strong>Convex</strong> in <span class="math inline">(Q, q)</span> space — membership is efficiently testable.</li>
 <li><strong>Grows with <span class="math inline">\|q\|</span></strong> — as the linear term dominates, more problems become certifiable.</li>
 <li><strong>Excludes the provably hard cases</strong> — <span class="math inline">q = 0</span> gives the pure homogeneous QP on <span class="math inline">\Delta_n</span>, which encodes max clique. These are never certifiable.</li>
 </ul>
-</section>
-<section id="the-pipeline" class="level3">
-<h3 class="anchored" data-anchor-id="the-pipeline">The pipeline</h3>
-<p>For any <span class="math inline">(Q, q) \in \mathcal{T}</span>:</p>
-<ol type="1">
-<li><strong>Certify</strong> (poly time): solve the SDP to find curvature parameters <span class="math inline">\kappa &gt; 0</span>.</li>
-<li><strong>Solve min</strong> (poly time): minimize the now-convex <span class="math inline">V(s(y))</span> over the convex set <span class="math inline">\{y \geq 0, \sum s_i(y_i) \leq 1\}</span>.</li>
-<li><strong>Solve max</strong> (constant time): evaluate <span class="math inline">V</span> at the <span class="math inline">n+1</span> vertices of <span class="math inline">\Delta_n</span>.</li>
-<li><strong>Recover</strong>: <span class="math inline">x^* = s(y^*)</span> is the global minimizer.</li>
-</ol>
-</section>
 <section id="limits" class="level3">
 <h3 class="anchored" data-anchor-id="limits">Limits</h3>
-<p>The method cannot certify every indefinite QP — only those where <span class="math inline">q</span> is large enough relative to <span class="math inline">Q</span>’s indefiniteness.</p>
-<p><strong>The boundary.</strong> As <span class="math inline">\|q\| \to 0</span>, the diagonal boost <span class="math inline">\kappa \circ \nabla V(x)</span> vanishes and <span class="math inline">M(x) \to Q</span>, which is indefinite. As <span class="math inline">\|q\| \to \infty</span>, gradients grow, providing a uniformly large diagonal correction.</p>
-<p><strong>What remains hard.</strong> Pure interaction problems (<span class="math inline">q = 0</span>), problems where interactions dominate (<span class="math inline">\|q\| \ll \|Q\|</span>), and strongly conflicting off-diagonal structure.</p>
+<p><strong>A necessary condition.</strong> Reparameterization is a diffeomorphism — it preserves critical points and their Morse index (Milnor 1963, Lemma 2.2), hence the number of local optima. So the method can <strong>only</strong> succeed when the original QP has a unique local optimum on <span class="math inline">\Delta_n</span>. Any instance with genuinely multiple local optima cannot be convexified by any smooth componentwise change of variables.</p>
+<p><strong>The inclusion chain.</strong> Let <span class="math inline">\mathcal{U}</span> denote the set of indefinite <span class="math inline">(Q, q)</span> for which <span class="math inline">V</span> has a unique local minimum on <span class="math inline">\Delta_n</span>. Then:</p>
+<p><span class="math display">\{Q \succeq 0\} \;\subset\; \mathcal{T} \;\subset\; \mathcal{U} \;\subset\; \{\text{all QPs on } \Delta_n\}.</span></p>
+<p>Both inclusions are strict. The first is clear: PSD <span class="math inline">Q</span> needs no reparameterization. The second follows from the diffeomorphism argument. What makes <span class="math inline">\mathcal{T}</span> useful is the <em>complexity gap</em> between the two sets:</p>
+<ul>
+<li><strong>Testing <span class="math inline">\mathcal{U}</span></strong> requires verifying that no other KKT point exists on any of the <span class="math inline">2^n - 1</span> nonempty faces of <span class="math inline">\Delta_n</span> — exponential time.</li>
+<li><strong>Testing <span class="math inline">\mathcal{T}</span></strong> is a semidefinite program with <span class="math inline">n + 1</span> constraints — polynomial time.</li>
+<li><strong><span class="math inline">\mathcal{T}</span> is convex</strong> in <span class="math inline">(Q, q)</span> space; <span class="math inline">\mathcal{U}</span> is not.</li>
+</ul>
+<p>So <span class="math inline">\mathcal{T}</span> is a <strong>tractable, convex inner approximation</strong> of <span class="math inline">\mathcal{U}</span>. The role of <span class="math inline">q</span> is to control the approximation quality: as <span class="math inline">\|q\| \to \infty</span> relative to <span class="math inline">\|Q\|</span>, the problem has a unique local optimum (driven by the linear term) and <span class="math inline">\mathcal{T}</span> captures it. As <span class="math inline">\|q\| \to 0</span>, multiple local optima proliferate and <span class="math inline">\mathcal{T}</span> correctly excludes these. The boundary <span class="math inline">q = 0</span> gives the pure homogeneous QP, which encodes max clique and is never certifiable.</p>
 <hr>
 </section>
 </section>
@@ -640,6 +632,7 @@ Note
 <li>Conitzer, V. &amp; Sandholm, T. (2003). Complexity results about Nash equilibria. <em>IJCAI</em>, 765–771.</li>
 <li>Bomze, I.M. (1998). On standard quadratic optimization problems. <em>Journal of Global Optimization</em> 13(4), 369–387.</li>
 <li>Burer, S. &amp; Ye, Y. (2020). Exactness of Parrilo’s conic approximations for copositive programs. <em>Mathematics of Operations Research</em> 45(1), 265–290.</li>
+<li>Milnor, J. (1963). <em>Morse Theory.</em> Annals of Mathematics Studies 51, Princeton University Press.</li>
 </ul>
 
 
