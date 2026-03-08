@@ -129,9 +129,47 @@ With certification in hand, apply the concave reparameterization and run gradien
 
 $$x^* = (1, 0, 0), \qquad V(x^*) = 5.5.$$
 
-All traffic on the highway — the route with the best free-flow quality ($q_1 = 4.5$). Compare: the worst equilibrium puts all commuters on the local road at $V = 1.5$, nearly $4\times$ worse.
+| Traffic split | $V$ | Description |
+|:---|:---:|:---|
+| $(1, 0, 0)$ — all highway | $5.50$ | **Global optimum** |
+| $(0, 1, 0)$ — all bypass | $4.25$ | $23\%$ worse |
+| $(\tfrac{1}{2}, \tfrac{1}{2}, 0)$ — highway/bypass | $4.31$ | Complementarity helps, but free-flow loss dominates |
+| $(\tfrac{1}{3}, \tfrac{1}{3}, \tfrac{1}{3})$ — equal split | $3.42$ | Local road's cross-congestion ($Q_{23}=1$) drags welfare down |
+| $(0, 0, 1)$ — all local | $1.50$ | $73\%$ worse — worst equilibrium |
 
-The SDP certifies that **no other equilibrium — on any face or in the interior of the simplex — achieves higher welfare.** Without this certificate, you would need to check KKT conditions on all $2^n - 1$ faces. For $n = 3$ that is manageable; for large $n$ it is exponential.
+**Physical interpretation.** The highway wins because its free-flow quality ($q_1 = 4.5$) is so dominant that even its high self-congestion ($Q_{11} = 2$) cannot overcome the advantage. Mixing in the bypass looks tempting — the complementarity $Q_{12} = -1$ provides congestion relief — but the bypass's lower free-flow quality ($q_2 = 4$) costs more than the relief gains. Mixing in the local road is punished by cross-congestion with both other routes ($Q_{13} = 0.5$, $Q_{23} = 1$) and its poor intrinsic quality ($q_3 = 1$).
+
+The SDP certifies that **no other equilibrium — on any face or in the interior of the simplex — achieves higher welfare.** Without this certificate, globally optimizing an indefinite QP on $\Delta_n$ requires checking KKT conditions on exponentially many faces. (See [`verify_routing_game.py`](file:///usr/local/google/home/dvij/verify_routing_game.py) for a self-contained script that verifies all numerical claims.)
+
+---
+
+## A non-vertex optimum: platform adoption
+
+The routing example has its optimum at a vertex. To see the method find a **mixed** optimum, consider a platform adoption game with $n = 3$ technologies.
+
+$$
+Q = \begin{pmatrix} -3 & 3.5 & 0.5 \\ 3.5 & 3.5 & 3 \\ 0.5 & 3 & 2 \end{pmatrix}, \qquad q = \begin{pmatrix} 17 \\ 14 \\ 12 \end{pmatrix}.
+$$
+
+Here $Q_{12} = 3.5 > 0$: platforms 1 and 2 are **synergistic** — adopting both together creates positive network effects (e.g., interoperable standards). Meanwhile $Q_{11} = -3 < 0$: concentrating entirely on platform 1 has diminishing returns (saturation). The reduced matrix $\tilde{Q} = \bigl[\begin{smallmatrix} -2 & 2 \\ 2 & -0.5 \end{smallmatrix}\bigr]$ is indefinite ($\det = -3$).
+
+### Certification
+
+With $\kappa = -0.3$, the NSD check passes at all three vertices:
+
+| Vertex | $g(v)$ | $\det M(v)$ | $\text{tr}\,M(v)$ |
+|:---:|:---:|:---:|:---:|
+| $(1,0)$ | $(1.5,\; 5.0)$ | $+0.90$ | $-4.45$ |
+| $(0,1)$ | $(5.5,\; 2.5)$ | $+0.56$ | $-4.90$ |
+| $(0,0)$ | $(3.5,\; 3.0)$ | $+0.27$ | $-4.45$ |
+
+### The optimum
+
+The welfare-maximizing equilibrium is **not** at any vertex:
+
+$$x^* \approx (0.46,\; 0.54,\; 0), \qquad V(x^*) = 16.44.$$
+
+Users split roughly half-and-half between the two synergistic platforms; nobody adopts platform 3. Compare with the best vertex $(0,1,0)$ at $V = 15.75$ — the mixed strategy gains $4\%$ from exploiting the cross-platform synergy $Q_{12} = 3.5$. No vertex enumeration finds this optimum; the reparameterization does.
 
 ---
 
