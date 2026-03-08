@@ -45,9 +45,9 @@ Since $S' \succ 0$, convexity of $V(s(y))$ is equivalent to $M(x) \succeq 0$ for
 For convex maps $s_i$ (the case $\kappa_i > 0$):
 
 - **Objective**: $V(s(y))$ is convex (by the PSD condition on $M$).
-- **Constraint**: the reparameterized feasible set is $\{y \geq 0 : \sum_i s_i(y_i) \leq 1\}$ — the sublevel set of the convex function $\sum s_i$. This is a **convex set**.
+- **Constraint**: since $s_i$ are nonneg-valued ($s_i(0) = 0$, $s_i$ increasing), the original simplex constraint $x_i \geq 0$ is automatic. The remaining constraint $\sum_i x_i \leq 1$ becomes $\sum_i s_i(y_i) \leq 1$ — the sublevel set of a convex function, hence **convex**.
 
-The full reparameterized problem is therefore: **minimize a convex function over a convex set** — solvable in polynomial time by projected gradient descent.
+The full reparameterized problem is: **minimize a convex function over a convex set** — solvable in polynomial time by projected gradient descent.
 
 ::: {.callout-note}
 **Maximization for free.** Convexification also solves $\max V$ on $\Delta_n$: a convex function attains its maximum at a vertex of a polytope, so we just evaluate $V$ at the $n+1$ vertices. The same certificate handles both directions.
