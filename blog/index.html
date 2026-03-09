@@ -344,7 +344,7 @@ window.Quarto = {
   <li><a href="#the-reparameterization" id="toc-the-reparameterization" class="nav-link" data-scroll-target="#the-reparameterization">The reparameterization</a>
   <ul class="collapse">
   <li><a href="#the-hessian" id="toc-the-hessian" class="nav-link" data-scroll-target="#the-hessian">The Hessian</a></li>
-  <li><a href="#both-objective-and-constraint-become-convex" id="toc-both-objective-and-constraint-become-convex" class="nav-link" data-scroll-target="#both-objective-and-constraint-become-convex">Both objective and constraint become convex</a></li>
+  <li><a href="#convexification-and-concavification" id="toc-convexification-and-concavification" class="nav-link" data-scroll-target="#convexification-and-concavification">Convexification and concavification</a></li>
   <li><a href="#reducing-to-a-finite-check" id="toc-reducing-to-a-finite-check" class="nav-link" data-scroll-target="#reducing-to-a-finite-check">Reducing to a finite check</a></li>
   </ul></li>
   <li><a href="#the-tractable-class" id="toc-the-tractable-class" class="nav-link" data-scroll-target="#the-tractable-class">The tractable class</a>
@@ -435,27 +435,12 @@ window.Quarto = {
 <p><span class="math display">M(x) = Q + \text{diag}\!\big(\kappa \circ \nabla V(x)\big), \qquad \nabla V(x) = Qx + q.</span></p>
 <p>Since <span class="math inline">S' \succ 0</span>, convexity of <span class="math inline">V(s(y))</span> is equivalent to <span class="math inline">M(x) \succeq 0</span> for all <span class="math inline">x \in \Delta</span>.</p>
 </section>
-<section id="both-objective-and-constraint-become-convex" class="level3">
-<h3 class="anchored" data-anchor-id="both-objective-and-constraint-become-convex">Both objective and constraint become convex</h3>
-<p>For convex maps <span class="math inline">s_i</span> (the case <span class="math inline">\kappa_i &gt; 0</span>):</p>
-<ul>
-<li><strong>Objective</strong>: <span class="math inline">V(s(y))</span> is convex (by the PSD condition on <span class="math inline">M</span>).</li>
-<li><strong>Constraint</strong>: since <span class="math inline">s_i(0) = 0</span> and <span class="math inline">s_i</span> is increasing, <span class="math inline">x_i \geq 0</span> is equivalent to <span class="math inline">y_i \geq 0</span>. The remaining constraint <span class="math inline">\sum_i x_i \leq 1</span> becomes <span class="math inline">\sum_i s_i(y_i) \leq 1</span> — the sublevel set of a convex function. The feasible set <span class="math inline">\{y \geq 0 : \sum_i s_i(y_i) \leq 1\}</span> is the intersection of the nonneg orthant with this sublevel set — <strong>convex</strong>.</li>
-</ul>
-<p>The full reparameterized problem is: <strong>minimize a convex function over a convex set</strong> — solvable in polynomial time by projected gradient descent.</p>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Note
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p><strong>Maximization for free.</strong> Convexification also solves <span class="math inline">\max V</span> on <span class="math inline">\Delta</span>: a convex function attains its maximum at a vertex of a polytope, so we just evaluate <span class="math inline">V</span> at the <span class="math inline">n+1</span> vertices. The same certificate handles both directions.</p>
-</div>
-</div>
+<section id="convexification-and-concavification" class="level3">
+<h3 class="anchored" data-anchor-id="convexification-and-concavification">Convexification and concavification</h3>
+<p>Two cases yield tractability:</p>
+<p><strong>Convexification</strong> (<span class="math inline">\kappa_i &gt; 0</span>, <span class="math inline">M \succeq 0</span>): <span class="math inline">V(s(y))</span> is convex. The constraint <span class="math inline">x_i \geq 0</span> becomes <span class="math inline">y_i \geq 0</span> (since <span class="math inline">s_i(0) = 0</span>, <span class="math inline">s_i</span> increasing), and <span class="math inline">\sum s_i(y_i) \leq 1</span> is a sublevel set of a convex function. The feasible set <span class="math inline">\{y \geq 0 : \sum s_i(y_i) \leq 1\}</span> is <strong>convex</strong>. Result: minimize a convex function over a convex set (polynomial time). As a bonus, <span class="math inline">\max V</span> is at a vertex — evaluate <span class="math inline">V</span> at <span class="math inline">n+1</span> points.</p>
+<p><strong>Concavification</strong> (<span class="math inline">\kappa_i &lt; 0</span>, <span class="math inline">M \preceq 0</span>): <span class="math inline">V(s(y))</span> is concave. The constraint set becomes a <strong>superlevel</strong> set of a concave function intersected with the nonneg orthant — also convex. Result: maximize a concave function over a convex set (polynomial time). And <span class="math inline">\min V</span> is at a vertex.</p>
+<p>In both cases, the reparameterized problem is a convex program. The <strong>tractable class</strong> <span class="math inline">\mathcal{T} = \mathcal{T}_{\text{convex}} \cup \mathcal{T}_{\text{concave}}</span> includes all <span class="math inline">(Q, q)</span> certifiable by either direction.</p>
 </section>
 <section id="reducing-to-a-finite-check" class="level3">
 <h3 class="anchored" data-anchor-id="reducing-to-a-finite-check">Reducing to a finite check</h3>
@@ -464,8 +449,8 @@ Note
 <li><span class="math inline">M(x)</span> is <strong>affine in <span class="math inline">x</span></strong> (because <span class="math inline">\nabla V</span> is), hence <strong>matrix-concave</strong>.</li>
 <li>A matrix-concave function on a polytope attains its minimum eigenvalue at a vertex.</li>
 </ol>
-<p><span class="math inline">\Delta</span> has <span class="math inline">n + 1</span> vertices. So checking <span class="math inline">M(x) \succeq 0</span> everywhere reduces to:</p>
-<p><span class="math display">\text{find}\; \kappa \;\;\text{s.t.}\;\; M(v_k) \succeq 0, \quad k = 0, 1, \ldots, n \tag{SDP}</span></p>
+<p><span class="math inline">\Delta</span> has <span class="math inline">n + 1</span> vertices. So checking <span class="math inline">M(x) \succeq 0</span> (or <span class="math inline">M(x) \preceq 0</span>) everywhere reduces to:</p>
+<p><span class="math display">\text{find}\; \kappa \;\;\text{s.t.}\;\; M(v_k) \succeq 0 \;\;(\text{or } \preceq 0), \quad k = 0, 1, \ldots, n \tag{SDP}</span></p>
 <p>This is a semidefinite program with <span class="math inline">n+1</span> matrix constraints of size <span class="math inline">n \times n</span> — polynomial time.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
@@ -486,19 +471,19 @@ Note
 </section>
 <section id="the-tractable-class" class="level2">
 <h2 class="anchored" data-anchor-id="the-tractable-class">The tractable class</h2>
-<p>The <strong>tractable class</strong> <span class="math inline">\mathcal{T}</span> is the set of <span class="math inline">(Q, q)</span> pairs for which the SDP is feasible. For a given <span class="math inline">(Q, q)</span>, the gradients <span class="math inline">g_k = Qv_k + q</span> are fixed vectors, and the SDP is an LMI in <span class="math inline">\kappa</span> — solvable in polynomial time.</p>
-<p>Certifiability depends on the <strong>sign pattern</strong> of the gradients across vertices. Each <span class="math inline">\kappa_i &gt; 0</span> adds <span class="math inline">\kappa_i g_{k,i}</span> to the <span class="math inline">i</span>-th diagonal of <span class="math inline">M(v_k)</span>: a positive <span class="math inline">g_{k,i}</span> gives leverage to boost <span class="math inline">Q_{ii}</span> past the off-diagonal entries, while a negative <span class="math inline">g_{k,i}</span> fights against it. If <span class="math inline">g_i &gt; 0</span> at every vertex, coordinate <span class="math inline">i</span> can be boosted arbitrarily — but this is the trivial case where the optimum is at the origin. The interesting regime is when gradients have <strong>sign conflicts</strong> across vertices: increasing <span class="math inline">\kappa_i</span> helps at some vertices and hurts at others, and certifiability reduces to whether the tradeoff can be balanced.</p>
+<p>The <strong>tractable class</strong> <span class="math inline">\mathcal{T} = \mathcal{T}_{\text{convex}} \cup \mathcal{T}_{\text{concave}}</span> is the set of <span class="math inline">(Q, q)</span> pairs for which the SDP is feasible in either direction. For a given <span class="math inline">(Q, q)</span>, the gradients <span class="math inline">g_k = Qv_k + q</span> are fixed vectors, and each SDP is an LMI in <span class="math inline">\kappa</span> — solvable in polynomial time.</p>
+<p>Certifiability depends on the <strong>sign pattern</strong> of the gradients across vertices. Each <span class="math inline">\kappa_i</span> adds <span class="math inline">\kappa_i g_{k,i}</span> to the <span class="math inline">i</span>-th diagonal of <span class="math inline">M(v_k)</span>: a positive <span class="math inline">g_{k,i}</span> gives leverage when <span class="math inline">\kappa_i &gt; 0</span>, while a negative <span class="math inline">g_{k,i}</span> gives leverage when <span class="math inline">\kappa_i &lt; 0</span>. The interesting regime is when gradients have <strong>sign conflicts</strong> across vertices, and certifiability reduces to whether the tradeoff can be balanced.</p>
 <section id="limits" class="level3">
 <h3 class="anchored" data-anchor-id="limits">Limits</h3>
-<p><strong>A necessary condition.</strong> Reparameterization is a diffeomorphism — it preserves all critical points and their Morse index (Milnor 1963, Lemma 2.2). After convexification, <span class="math inline">V \circ s</span> is convex, so every critical point has index 0 (is a local minimum) — in particular, there are no saddle points. This means the method can <strong>only</strong> succeed when <span class="math inline">V</span> has a <strong>unique critical point</strong> on <span class="math inline">\Delta</span>: not just a unique local minimum, but no saddle points at all.</p>
-<p><strong>The inclusion chain.</strong> Let <span class="math inline">\mathcal{U}</span> denote the set of <span class="math inline">(Q, q)</span> for which <span class="math inline">V</span> has a unique critical point on <span class="math inline">\Delta</span>. Then:</p>
-<p><span class="math display">\{Q \succeq 0\} \;\subset\; \mathcal{T} \;\subset\; \mathcal{U} \;\subset\; \{\text{all QPs on } \Delta\}.</span></p>
-<p>Both inclusions are strict. What makes <span class="math inline">\mathcal{T}</span> useful is the <em>complexity gap</em>:</p>
+<p><strong>A necessary condition.</strong> Vertex evaluation is always free (<span class="math inline">n+1</span> function evaluations). The hard part is finding non-vertex optima. Reparameterization is a diffeomorphism — it preserves all critical points and their Morse index (Milnor 1963, Lemma 2.2). After convexification or concavification, <span class="math inline">V \circ s</span> has at most one non-vertex critical point (the interior optimum, if it exists).</p>
+<p><strong>The inclusion chain.</strong> Let <span class="math inline">\mathcal{U}</span> denote the set of <span class="math inline">(Q, q)</span> for which <span class="math inline">V</span> has at most one non-vertex critical point on <span class="math inline">\Delta</span>. Then:</p>
+<p><span class="math display">\mathcal{T}_{\text{convex}} \cup \mathcal{T}_{\text{concave}} \;\subset\; \mathcal{U} \;\subset\; \{\text{all QPs on } \Delta\}.</span></p>
+<p>What makes <span class="math inline">\mathcal{T}</span> useful is the <em>complexity gap</em>:</p>
 <ul>
-<li><strong>Testing <span class="math inline">\mathcal{U}</span></strong> requires verifying that no KKT point exists on any of the <span class="math inline">2^n - 1</span> nonempty faces of <span class="math inline">\Delta</span> other than the global minimum — exponential time.</li>
-<li><strong>Testing <span class="math inline">\mathcal{T}</span></strong> is a single LMI in <span class="math inline">\kappa</span> — polynomial time.</li>
+<li><strong>Testing <span class="math inline">\mathcal{U}</span></strong> requires checking all <span class="math inline">2^n</span> faces of <span class="math inline">\Delta</span> for non-vertex KKT points — exponential time.</li>
+<li><strong>Testing <span class="math inline">\mathcal{T}</span></strong> is a pair of LMIs in <span class="math inline">\kappa</span> — polynomial time.</li>
 </ul>
-<p>So <span class="math inline">\mathcal{T}</span> is a <strong>tractable inner approximation</strong> of <span class="math inline">\mathcal{U}</span>. The gap <span class="math inline">\mathcal{U} \setminus \mathcal{T}</span> consists of QPs with a unique critical point whose gradient sign pattern across vertices cannot be balanced by any <span class="math inline">\kappa &gt; 0</span>.</p>
+<p>So <span class="math inline">\mathcal{T}</span> is a <strong>tractable inner approximation</strong> of <span class="math inline">\mathcal{U}</span>. The gap <span class="math inline">\mathcal{U} \setminus \mathcal{T}</span> consists of QPs with at most one non-vertex critical point whose gradient sign pattern cannot be balanced by any <span class="math inline">\kappa</span>.</p>
 <hr>
 </section>
 </section>
@@ -566,18 +551,28 @@ Q = \begin{pmatrix} 1 &amp; 0 &amp; 0.5 \\ 0 &amp; 0.5 &amp; 1 \\ 0.5 &amp; 1 &a
 </thead>
 <tbody>
 <tr class="odd">
-<td>Unique critical point (<span class="math inline">\mathcal{U}</span>)</td>
-<td style="text-align: center;">454</td>
-<td style="text-align: center;">91%</td>
+<td><span class="math inline">\leq 1</span> non-vertex critical point (<span class="math inline">\mathcal{U}</span>)</td>
+<td style="text-align: center;">495</td>
+<td style="text-align: center;">99%</td>
 </tr>
 <tr class="even">
-<td>Certifiably tractable (<span class="math inline">\mathcal{T}</span>)</td>
+<td>Convexifiable (<span class="math inline">\mathcal{T}_{\text{convex}}</span>)</td>
 <td style="text-align: center;">78</td>
 <td style="text-align: center;">16%</td>
 </tr>
+<tr class="odd">
+<td>Concavifiable (<span class="math inline">\mathcal{T}_{\text{concave}}</span>)</td>
+<td style="text-align: center;">94</td>
+<td style="text-align: center;">19%</td>
+</tr>
+<tr class="even">
+<td>Either (<span class="math inline">\mathcal{T}</span>)</td>
+<td style="text-align: center;">155</td>
+<td style="text-align: center;">31%</td>
+</tr>
 </tbody>
 </table>
-<p><span class="math inline">\mathcal{T}</span> covers roughly <strong>10%</strong> of <span class="math inline">\mathcal{U}</span>: most indefinite QPs with a unique critical point cannot be certified by constant-curvature reparameterization. The gap reflects sign conflicts in the gradient pattern that no <span class="math inline">\kappa &gt; 0</span> can resolve. Closing this gap — via variable-curvature reparameterizations or SOS certificates — is the main open problem.</p>
+<p><span class="math inline">\mathcal{T}</span> covers roughly <strong>31%</strong> of <span class="math inline">\mathcal{U}</span>. Including concavification nearly doubles the tractable class. The remaining gap reflects QPs whose gradient sign pattern cannot be balanced by any constant-curvature <span class="math inline">\kappa</span>. Closing this gap — via variable-curvature reparameterizations or SOS certificates — is the main open problem.</p>
 </section>
 <section id="dynamics" class="level3">
 <h3 class="anchored" data-anchor-id="dynamics">Dynamics</h3>
