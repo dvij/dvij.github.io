@@ -45,7 +45,7 @@ Since $S' \succ 0$, convexity of $V(s(y))$ is equivalent to $M(x) \succeq 0$ for
 For convex maps $s_i$ (the case $\kappa_i > 0$):
 
 - **Objective**: $V(s(y))$ is convex (by the PSD condition on $M$).
-- **Constraint**: since $s_i$ are nonneg-valued ($s_i(0) = 0$, $s_i$ increasing), $x_i \geq 0$ is automatic. The remaining constraint $\sum_i x_i \leq 1$ becomes $\sum_i s_i(y_i) \leq 1$ — the sublevel set of a convex function, hence **convex**.
+- **Constraint**: since $s_i(0) = 0$ and $s_i$ is increasing, $x_i \geq 0$ is equivalent to $y_i \geq 0$. The remaining constraint $\sum_i x_i \leq 1$ becomes $\sum_i s_i(y_i) \leq 1$ — the sublevel set of a convex function. The feasible set $\{y \geq 0 : \sum_i s_i(y_i) \leq 1\}$ is the intersection of the nonneg orthant with this sublevel set — **convex**.
 
 The full reparameterized problem is: **minimize a convex function over a convex set** — solvable in polynomial time by projected gradient descent.
 
@@ -109,6 +109,12 @@ The payoff to strategy $i$ is $F_i(x) = \partial V / \partial x_i$. **Social wel
 **Potential $\neq$ welfare.** The potential is $V = \tfrac{1}{2}x^\top Q x + q^\top x$; welfare is $W = x^\top Q x + q^\top x = 2V - q^\top x$. They differ by a linear term. The framework applies to either — they are both QPs on $\Delta$ — but welfare is the economically meaningful objective.
 :::
 
+### When is welfare indefinite?
+
+In standard congestion games (Beckmann's model), each edge has a cost depending only on its own flow. This gives a separable potential with **diagonal** $Q$ — convex if costs are increasing. The welfare optimization is trivial.
+
+Indefiniteness arises when routes **interact**: shared infrastructure (two routes merge at a bottleneck), cross-congestion (traffic on one route spills onto another), or network effects (adopting one technology raises the value of a complementary one). These appear as **off-diagonal entries** in $Q$. When the cross-route effects are large enough relative to the diagonal, $Q$ becomes indefinite and the welfare QP is NP-hard — exactly the regime where the convexification method is useful.
+
 ### Example 1: traffic routing (vertex optimum)
 
 A unit mass of commuters splits among $n+1 = 3$ routes. Social welfare is $W(x) = x^\top (Qx + q)$. After eliminating route 3, the reduced welfare QP on $\Delta \subset \mathbb{R}^2$ has:
@@ -145,21 +151,21 @@ Users split between platforms 1 and 2 (favoring platform 2). This equilibrium is
 
 ### Numerical evidence
 
-On 500 random indefinite potential games ($n = 4$, $\|q\|/\|Q\| \approx 3$):
+On 500 random indefinite QPs on $\Delta$ ($n = 4$, $\|q\|/\|Q\| \approx 3$):
 
 | | Count | % |
 |---|:---:|:---:|
 | Certifiably tractable | 411 | 82% |
 | Not certifiable | 89 | 18% |
 
-Of the 411 certifiable games, **29 had interior global optima** — fully mixed equilibria. The reparameterization found every one exactly, validated against brute-force global search.
+Of the 411 certifiable instances, **29 had interior global optima** — fully mixed strategies that cannot be found by vertex enumeration. The reparameterization found every one exactly, validated against brute-force global search. Since the framework is QP-agnostic, these rates apply whether the QP represents welfare, potential, or any other objective.
 
 ### Dynamics
 
-In potential games, learning dynamics (replicator, gradient play) converge to *some* Nash equilibrium — but not necessarily the optimal one. In the certifiable class, the reparameterized $V$ has a unique global optimum, so:
+In potential games, learning dynamics (replicator, gradient play) converge to *some* Nash equilibrium — but not necessarily the welfare-maximizing one. When the welfare QP is certifiable, the reparameterized $W$ has a unique global maximum, so:
 
 ::: {.callout-note}
-**Corollary.** For games in the certifiable class, gradient-based dynamics in the reparameterized space converge to the welfare-maximizing equilibrium from almost all initial conditions.
+**Corollary.** For certifiable welfare QPs, gradient-based dynamics in the reparameterized space converge to the welfare-maximizing equilibrium from almost all initial conditions.
 :::
 
 ---
