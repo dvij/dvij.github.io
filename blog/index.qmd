@@ -40,18 +40,15 @@ $$M(x) = Q + \text{diag}\!\big(\kappa \circ \nabla V(x)\big), \qquad \nabla V(x)
 
 Since $S' \succ 0$, convexity of $V(s(y))$ is equivalent to $M(x) \succeq 0$ for all $x \in \Delta$.
 
-### Both objective and constraint become convex
+### Convexification and concavification
 
-For convex maps $s_i$ (the case $\kappa_i > 0$):
+Two cases yield tractability:
 
-- **Objective**: $V(s(y))$ is convex (by the PSD condition on $M$).
-- **Constraint**: since $s_i(0) = 0$ and $s_i$ is increasing, $x_i \geq 0$ is equivalent to $y_i \geq 0$. The remaining constraint $\sum_i x_i \leq 1$ becomes $\sum_i s_i(y_i) \leq 1$ — the sublevel set of a convex function. The feasible set $\{y \geq 0 : \sum_i s_i(y_i) \leq 1\}$ is the intersection of the nonneg orthant with this sublevel set — **convex**.
+**Convexification** ($\kappa_i > 0$, $M \succeq 0$): $V(s(y))$ is convex. The constraint $x_i \geq 0$ becomes $y_i \geq 0$ (since $s_i(0) = 0$, $s_i$ increasing), and $\sum s_i(y_i) \leq 1$ is a sublevel set of a convex function. The feasible set $\{y \geq 0 : \sum s_i(y_i) \leq 1\}$ is **convex**. Result: minimize a convex function over a convex set (polynomial time). As a bonus, $\max V$ is at a vertex — evaluate $V$ at $n+1$ points.
 
-The full reparameterized problem is: **minimize a convex function over a convex set** — solvable in polynomial time by projected gradient descent.
+**Concavification** ($\kappa_i < 0$, $M \preceq 0$): $V(s(y))$ is concave. The constraint set becomes a **superlevel** set of a concave function intersected with the nonneg orthant — also convex. Result: maximize a concave function over a convex set (polynomial time). And $\min V$ is at a vertex.
 
-::: {.callout-note}
-**Maximization for free.** Convexification also solves $\max V$ on $\Delta$: a convex function attains its maximum at a vertex of a polytope, so we just evaluate $V$ at the $n+1$ vertices. The same certificate handles both directions.
-:::
+In both cases, the reparameterized problem is a convex program. The **tractable class** $\mathcal{T} = \mathcal{T}_{\text{convex}} \cup \mathcal{T}_{\text{concave}}$ includes all $(Q, q)$ certifiable by either direction.
 
 ### Reducing to a finite check
 
@@ -60,9 +57,9 @@ Two key facts:
 1. $M(x)$ is **affine in $x$** (because $\nabla V$ is), hence **matrix-concave**.
 2. A matrix-concave function on a polytope attains its minimum eigenvalue at a vertex.
 
-$\Delta$ has $n + 1$ vertices. So checking $M(x) \succeq 0$ everywhere reduces to:
+$\Delta$ has $n + 1$ vertices. So checking $M(x) \succeq 0$ (or $M(x) \preceq 0$) everywhere reduces to:
 
-$$\text{find}\; \kappa \;\;\text{s.t.}\;\; M(v_k) \succeq 0, \quad k = 0, 1, \ldots, n \tag{SDP}$$
+$$\text{find}\; \kappa \;\;\text{s.t.}\;\; M(v_k) \succeq 0 \;\;(\text{or } \preceq 0), \quad k = 0, 1, \ldots, n \tag{SDP}$$
 
 This is a semidefinite program with $n+1$ matrix constraints of size $n \times n$ — polynomial time.
 
@@ -76,24 +73,24 @@ This is a semidefinite program with $n+1$ matrix constraints of size $n \times n
 
 ## The tractable class
 
-The **tractable class** $\mathcal{T}$ is the set of $(Q, q)$ pairs for which the SDP is feasible. For a given $(Q, q)$, the gradients $g_k = Qv_k + q$ are fixed vectors, and the SDP is an LMI in $\kappa$ — solvable in polynomial time.
+The **tractable class** $\mathcal{T} = \mathcal{T}_{\text{convex}} \cup \mathcal{T}_{\text{concave}}$ is the set of $(Q, q)$ pairs for which the SDP is feasible in either direction. For a given $(Q, q)$, the gradients $g_k = Qv_k + q$ are fixed vectors, and each SDP is an LMI in $\kappa$ — solvable in polynomial time.
 
-Certifiability depends on the **sign pattern** of the gradients across vertices. Each $\kappa_i > 0$ adds $\kappa_i g_{k,i}$ to the $i$-th diagonal of $M(v_k)$: a positive $g_{k,i}$ gives leverage to boost $Q_{ii}$ past the off-diagonal entries, while a negative $g_{k,i}$ fights against it. If $g_i > 0$ at every vertex, coordinate $i$ can be boosted arbitrarily — but this is the trivial case where the optimum is at the origin. The interesting regime is when gradients have **sign conflicts** across vertices: increasing $\kappa_i$ helps at some vertices and hurts at others, and certifiability reduces to whether the tradeoff can be balanced.
+Certifiability depends on the **sign pattern** of the gradients across vertices. Each $\kappa_i$ adds $\kappa_i g_{k,i}$ to the $i$-th diagonal of $M(v_k)$: a positive $g_{k,i}$ gives leverage when $\kappa_i > 0$, while a negative $g_{k,i}$ gives leverage when $\kappa_i < 0$. The interesting regime is when gradients have **sign conflicts** across vertices, and certifiability reduces to whether the tradeoff can be balanced.
 
 ### Limits
 
-**A necessary condition.** Reparameterization is a diffeomorphism — it preserves all critical points and their Morse index (Milnor 1963, Lemma 2.2). After convexification, $V \circ s$ is convex, so every critical point has index 0 (is a local minimum) — in particular, there are no saddle points. This means the method can **only** succeed when $V$ has a **unique critical point** on $\Delta$: not just a unique local minimum, but no saddle points at all.
+**A necessary condition.** Vertex evaluation is always free ($n+1$ function evaluations). The hard part is finding non-vertex optima. Reparameterization is a diffeomorphism — it preserves all critical points and their Morse index (Milnor 1963, Lemma 2.2). After convexification or concavification, $V \circ s$ has at most one non-vertex critical point (the interior optimum, if it exists).
 
-**The inclusion chain.** Let $\mathcal{U}$ denote the set of $(Q, q)$ for which $V$ has a unique critical point on $\Delta$. Then:
+**The inclusion chain.** Let $\mathcal{U}$ denote the set of $(Q, q)$ for which $V$ has at most one non-vertex critical point on $\Delta$. Then:
 
-$$\{Q \succeq 0\} \;\subset\; \mathcal{T} \;\subset\; \mathcal{U} \;\subset\; \{\text{all QPs on } \Delta\}.$$
+$$\mathcal{T}_{\text{convex}} \cup \mathcal{T}_{\text{concave}} \;\subset\; \mathcal{U} \;\subset\; \{\text{all QPs on } \Delta\}.$$
 
-Both inclusions are strict. What makes $\mathcal{T}$ useful is the *complexity gap*:
+What makes $\mathcal{T}$ useful is the *complexity gap*:
 
-- **Testing $\mathcal{U}$** requires verifying that no KKT point exists on any of the $2^n - 1$ nonempty faces of $\Delta$ other than the global minimum — exponential time.
-- **Testing $\mathcal{T}$** is a single LMI in $\kappa$ — polynomial time.
+- **Testing $\mathcal{U}$** requires checking all $2^n$ faces of $\Delta$ for non-vertex KKT points — exponential time.
+- **Testing $\mathcal{T}$** is a pair of LMIs in $\kappa$ — polynomial time.
 
-So $\mathcal{T}$ is a **tractable inner approximation** of $\mathcal{U}$. The gap $\mathcal{U} \setminus \mathcal{T}$ consists of QPs with a unique critical point whose gradient sign pattern across vertices cannot be balanced by any $\kappa > 0$.
+So $\mathcal{T}$ is a **tractable inner approximation** of $\mathcal{U}$. The gap $\mathcal{U} \setminus \mathcal{T}$ consists of QPs with at most one non-vertex critical point whose gradient sign pattern cannot be balanced by any $\kappa$.
 
 ---
 
@@ -159,10 +156,12 @@ On 500 random indefinite QPs on $\Delta$ ($n = 4$, $\|q\|/\|Q\| \approx 3$, vect
 
 | | Count | % |
 |---|:---:|:---:|
-| Unique critical point ($\mathcal{U}$) | 454 | 91% |
-| Certifiably tractable ($\mathcal{T}$) | 78 | 16% |
+| $\leq 1$ non-vertex critical point ($\mathcal{U}$) | 495 | 99% |
+| Convexifiable ($\mathcal{T}_{\text{convex}}$) | 78 | 16% |
+| Concavifiable ($\mathcal{T}_{\text{concave}}$) | 94 | 19% |
+| Either ($\mathcal{T}$) | 155 | 31% |
 
-$\mathcal{T}$ covers roughly **10%** of $\mathcal{U}$: most indefinite QPs with a unique critical point cannot be certified by constant-curvature reparameterization. The gap reflects sign conflicts in the gradient pattern that no $\kappa > 0$ can resolve. Closing this gap — via variable-curvature reparameterizations or SOS certificates — is the main open problem.
+$\mathcal{T}$ covers roughly **31%** of $\mathcal{U}$. Including concavification nearly doubles the tractable class. The remaining gap reflects QPs whose gradient sign pattern cannot be balanced by any constant-curvature $\kappa$. Closing this gap — via variable-curvature reparameterizations or SOS certificates — is the main open problem.
 
 ### Dynamics
 
