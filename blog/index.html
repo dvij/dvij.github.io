@@ -354,6 +354,7 @@ window.Quarto = {
   <li><a href="#application-welfare-maximization-in-potential-games" id="toc-application-welfare-maximization-in-potential-games" class="nav-link" data-scroll-target="#application-welfare-maximization-in-potential-games">Application: welfare maximization in potential games</a>
   <ul class="collapse">
   <li><a href="#background" id="toc-background" class="nav-link" data-scroll-target="#background">Background</a></li>
+  <li><a href="#when-is-welfare-indefinite" id="toc-when-is-welfare-indefinite" class="nav-link" data-scroll-target="#when-is-welfare-indefinite">When is welfare indefinite?</a></li>
   <li><a href="#example-1-traffic-routing-vertex-optimum" id="toc-example-1-traffic-routing-vertex-optimum" class="nav-link" data-scroll-target="#example-1-traffic-routing-vertex-optimum">Example 1: traffic routing (vertex optimum)</a></li>
   <li><a href="#example-2-platform-adoption-mixed-optimum-via-concavification" id="toc-example-2-platform-adoption-mixed-optimum-via-concavification" class="nav-link" data-scroll-target="#example-2-platform-adoption-mixed-optimum-via-concavification">Example 2: platform adoption (mixed optimum via concavification)</a></li>
   <li><a href="#numerical-evidence" id="toc-numerical-evidence" class="nav-link" data-scroll-target="#numerical-evidence">Numerical evidence</a></li>
@@ -439,7 +440,7 @@ window.Quarto = {
 <p>For convex maps <span class="math inline">s_i</span> (the case <span class="math inline">\kappa_i &gt; 0</span>):</p>
 <ul>
 <li><strong>Objective</strong>: <span class="math inline">V(s(y))</span> is convex (by the PSD condition on <span class="math inline">M</span>).</li>
-<li><strong>Constraint</strong>: since <span class="math inline">s_i</span> are nonneg-valued (<span class="math inline">s_i(0) = 0</span>, <span class="math inline">s_i</span> increasing), <span class="math inline">x_i \geq 0</span> is automatic. The remaining constraint <span class="math inline">\sum_i x_i \leq 1</span> becomes <span class="math inline">\sum_i s_i(y_i) \leq 1</span> — the sublevel set of a convex function, hence <strong>convex</strong>.</li>
+<li><strong>Constraint</strong>: since <span class="math inline">s_i(0) = 0</span> and <span class="math inline">s_i</span> is increasing, <span class="math inline">x_i \geq 0</span> is equivalent to <span class="math inline">y_i \geq 0</span>. The remaining constraint <span class="math inline">\sum_i x_i \leq 1</span> becomes <span class="math inline">\sum_i s_i(y_i) \leq 1</span> — the sublevel set of a convex function. The feasible set <span class="math inline">\{y \geq 0 : \sum_i s_i(y_i) \leq 1\}</span> is the intersection of the nonneg orthant with this sublevel set — <strong>convex</strong>.</li>
 </ul>
 <p>The full reparameterized problem is: <strong>minimize a convex function over a convex set</strong> — solvable in polynomial time by projected gradient descent.</p>
 <div class="callout callout-style-default callout-note callout-titled">
@@ -521,6 +522,11 @@ Note
 </div>
 </div>
 </section>
+<section id="when-is-welfare-indefinite" class="level3">
+<h3 class="anchored" data-anchor-id="when-is-welfare-indefinite">When is welfare indefinite?</h3>
+<p>In standard congestion games (Beckmann’s model), each edge has a cost depending only on its own flow. This gives a separable potential with <strong>diagonal</strong> <span class="math inline">Q</span> — convex if costs are increasing. The welfare optimization is trivial.</p>
+<p>Indefiniteness arises when routes <strong>interact</strong>: shared infrastructure (two routes merge at a bottleneck), cross-congestion (traffic on one route spills onto another), or network effects (adopting one technology raises the value of a complementary one). These appear as <strong>off-diagonal entries</strong> in <span class="math inline">Q</span>. When the cross-route effects are large enough relative to the diagonal, <span class="math inline">Q</span> becomes indefinite and the welfare QP is NP-hard — exactly the regime where the convexification method is useful.</p>
+</section>
 <section id="example-1-traffic-routing-vertex-optimum" class="level3">
 <h3 class="anchored" data-anchor-id="example-1-traffic-routing-vertex-optimum">Example 1: traffic routing (vertex optimum)</h3>
 <p>A unit mass of commuters splits among <span class="math inline">n+1 = 3</span> routes. Social welfare is <span class="math inline">W(x) = x^\top (Qx + q)</span>. After eliminating route 3, the reduced welfare QP on <span class="math inline">\Delta \subset \mathbb{R}^2</span> has:</p>
@@ -546,7 +552,7 @@ Note
 </section>
 <section id="numerical-evidence" class="level3">
 <h3 class="anchored" data-anchor-id="numerical-evidence">Numerical evidence</h3>
-<p>On 500 random indefinite potential games (<span class="math inline">n = 4</span>, <span class="math inline">\|q\|/\|Q\| \approx 3</span>):</p>
+<p>On 500 random indefinite QPs on <span class="math inline">\Delta</span> (<span class="math inline">n = 4</span>, <span class="math inline">\|q\|/\|Q\| \approx 3</span>):</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -568,11 +574,11 @@ Note
 </tr>
 </tbody>
 </table>
-<p>Of the 411 certifiable games, <strong>29 had interior global optima</strong> — fully mixed equilibria. The reparameterization found every one exactly, validated against brute-force global search.</p>
+<p>Of the 411 certifiable instances, <strong>29 had interior global optima</strong> — fully mixed strategies that cannot be found by vertex enumeration. The reparameterization found every one exactly, validated against brute-force global search. Since the framework is QP-agnostic, these rates apply whether the QP represents welfare, potential, or any other objective.</p>
 </section>
 <section id="dynamics" class="level3">
 <h3 class="anchored" data-anchor-id="dynamics">Dynamics</h3>
-<p>In potential games, learning dynamics (replicator, gradient play) converge to <em>some</em> Nash equilibrium — but not necessarily the optimal one. In the certifiable class, the reparameterized <span class="math inline">V</span> has a unique global optimum, so:</p>
+<p>In potential games, learning dynamics (replicator, gradient play) converge to <em>some</em> Nash equilibrium — but not necessarily the welfare-maximizing one. When the welfare QP is certifiable, the reparameterized <span class="math inline">W</span> has a unique global maximum, so:</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -583,7 +589,7 @@ Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p><strong>Corollary.</strong> For games in the certifiable class, gradient-based dynamics in the reparameterized space converge to the welfare-maximizing equilibrium from almost all initial conditions.</p>
+<p><strong>Corollary.</strong> For certifiable welfare QPs, gradient-based dynamics in the reparameterized space converge to the welfare-maximizing equilibrium from almost all initial conditions.</p>
 </div>
 </div>
 <hr>
